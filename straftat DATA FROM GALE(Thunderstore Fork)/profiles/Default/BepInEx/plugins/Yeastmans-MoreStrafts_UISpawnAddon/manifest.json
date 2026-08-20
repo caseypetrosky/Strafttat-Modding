@@ -1,0 +1,10 @@
+{
+    "name": "MoreStrafts_UISpawnAddon",
+    "version_number": "2.0.1",
+    "website_url": "",
+    "description": "Fully functional 5-10 player lobby UI, grid layout, per-player scores, victory screen, and spawn offsets. (Addon For MoreStrafts.)",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2304",
+        "Nitrogenia-moreStrafts-0.0.5"
+    ]
+}
