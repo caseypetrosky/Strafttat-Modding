@@ -17,8 +17,8 @@ namespace MoreStraftsRecon
     [BepInPlugin(Guid, Name, Version)]
     public class Plugin : BaseUnityPlugin
     {
-        // Change "yourname" to your handle. GUIDs must be unique across all installed mods.
-        public const string Guid = "com.yourname.morestraftsrecon";
+        // GUIDs must be unique across installed mods; this also names the plugin's config file.
+        public const string Guid = "com.caseypetrosky.morestraftsrecon";
         public const string Name = "MoreStrafts Recon";
         public const string Version = "0.1.0";
 

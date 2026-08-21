@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Loopback test harness. Shared settings come from ../../Directory.Build.props.
+
+       Note what is NOT referenced here: Assembly-CSharp. Everything
+       game-specific goes through Harmony's AccessTools by name (see
+       SceneMotorSpawner), so this plugin depends only on FishNet, BepInEx
+       and Unity — and keeps loading cleanly across game updates. -->
+
+  <PropertyGroup>
+    <AssemblyName>LoopbackLab</AssemblyName>
+    <RootNamespace>LoopbackLab</RootNamespace>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="FishNet.Runtime">
+      <HintPath>$(ManagedDir)/FishNet.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

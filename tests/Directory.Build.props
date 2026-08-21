@@ -1,0 +1,10 @@
+<Project>
+  <!-- Intentionally empty, and intentionally NOT importing the parent.
+
+       MSBuild walks up the tree for the nearest Directory.Build.props and
+       stops at the first one it finds. Without this file, test projects would
+       inherit the plugin settings from the repo root - netstandard2.1, the
+       BepInEx package reference, Unity assembly references, and the
+       copy-to-BepInEx build step - none of which a plain console test app
+       wants or can restore. -->
+</Project>

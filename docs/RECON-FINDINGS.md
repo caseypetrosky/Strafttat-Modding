@@ -175,5 +175,7 @@ UI layer from scratch.** Reasoning:
 Solo-testability note: the lobby UI parts (slot cloning, grid relayout,
 dropdown, round-end arrays) can be exercised with a hosted 1-player lobby plus
 the recon dumps; genuinely multi-client behaviors (RPC clamp, spawn collisions,
-per-player tab scores) still need the multi-client rig from the task doc —
-that remains the top unblocker before committing to implementation.
+per-player tab scores) still need a multi-client rig — that remains the top
+unblocker before committing to implementation. See **SOLO-TESTING.md**: the
+game ships FishNet's Tugboat transport and already handles
+`nonSteamworksTransport` throughout, so a loopback test mod looks viable.
