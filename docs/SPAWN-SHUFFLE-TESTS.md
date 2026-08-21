@@ -67,6 +67,17 @@ independently of the players fixed both; this test fails if that regresses.
 **5. Offsets are sane.** A player alone at a point is never displaced (offset
 exactly zero), and every angle falls within one full turn.
 
+**7. Spawn coverage invariants.** The two properties the design promises,
+asserted over 2/4/6 spawn points, 1-10 players, 300 rounds each:
+
+- **players <= points** — everyone gets their own spawn point, nobody shares
+  when they don't have to (matching vanilla).
+- **players > points** — every point is occupied and the load is even, differing
+  by at most one player between the busiest and quietest point. This is what
+  stops three players piling onto one spawn while another sits empty. Round-robin
+  dealing gives it for free, but it is a stated requirement, so it is asserted
+  rather than assumed.
+
 **6. Degenerate input never throws.** Empty roster, zero spawn points, an
 unknown player id, and a negative round counter all return an in-range slot
 instead of an exception. In the plugin these paths also fall through to vanilla

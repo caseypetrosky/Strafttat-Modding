@@ -62,6 +62,34 @@ Where more players than points exist, everyone sharing a point is spread evenly
 around a small circle (`ClusterRadius`, default 0.6 m), rotated a little each
 round so the cluster isn't always oriented the same way.
 
+## What it looks like
+
+7 players (A-G) on a 4-point map. Vanilla — the whole board shifts one column
+per round, so D is alone every round and A is beside E every round, forever:
+
+```
+        point 0      point 1      point 2      point 3
+round 0:  A,E          B,F          C,G          D
+round 1:  D            A,E          B,F          C,G
+round 2:  C,G          D            A,E          B,F
+round 3:  B,F          C,G          D            A,E
+```
+
+Spawn Shuffle — the pairings and the loner change every round:
+
+```
+        point 0      point 1      point 2      point 3
+round 0:  F,G          C            B,E          A,D
+round 1:  A,C          F            E,G          B,D
+round 2:  D,G          E,F          A,B          C
+round 3:  A,D          F,G          C            B,E
+```
+
+Note every point stays occupied and the load stays even — three points with two
+players and one with a single player, never four crowded onto one spawn while
+another sits empty. With 4 players or fewer everyone gets their own point, as
+vanilla does; only the arrangement changes.
+
 ## Config
 
 `BepInEx/config/com.caseypetrosky.spawnshuffle.cfg`
