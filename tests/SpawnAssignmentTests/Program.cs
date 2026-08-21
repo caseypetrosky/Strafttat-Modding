@@ -126,6 +126,50 @@ class Program
             Console.WriteLine($"   P={P}: vanilla pairing changed in {100.0 * changes / comparisons:F1}% of pair-rounds");
         }
 
+        // 4c. Small lobbies (players <= spawn points) are the common case: nobody
+        //     shares a point, so "who shares" says nothing. The question there is
+        //     whether the ARRANGEMENT varies - measured as the relative offset
+        //     (slotA - slotB) mod N. Vanilla holds it constant forever.
+        Console.WriteLine("4c. small lobbies: relative arrangement varies");
+        foreach (int P in new[] { 2, 3, 4 })
+        {
+            const int N = 4;
+            var players = Enumerable.Range(0, P).ToList();
+            var distinct = new Dictionary<(int, int), HashSet<int>>();
+            var vanillaDistinct = new Dictionary<(int, int), HashSet<int>>();
+            for (int round = 0; round < 400; round++)
+                foreach (var a in players) foreach (var b in players)
+                {
+                    if (a >= b) continue;
+                    var key = (a, b);
+                    if (!distinct.ContainsKey(key)) { distinct[key] = new(); vanillaDistinct[key] = new(); }
+                    int sa = SpawnAssignment.Assign(a, players, N, round, 0).SpawnPointIndex;
+                    int sb = SpawnAssignment.Assign(b, players, N, round, 0).SpawnPointIndex;
+                    distinct[key].Add(((sa - sb) % N + N) % N);
+                    vanillaDistinct[key].Add((((round + a) % N - (round + b) % N) % N + N) % N);
+                }
+            double avg = distinct.Values.Average(h => h.Count);
+            double vAvg = vanillaDistinct.Values.Average(h => h.Count);
+            Console.WriteLine($"   P={P}: distinct relative positions - vanilla {vAvg:F1}, shuffle {avg:F1} (max {N - 1})");
+            Check(avg > vAvg, $"shuffle varies arrangement more than vanilla at P={P}");
+            Check(avg >= N - 1 - 1e-9, $"shuffle reaches every arrangement at P={P}");
+        }
+
+        // 4d. Regression: with fewer players than spawn points, every point on the
+        //     map must still get used. An earlier version mapped seats straight
+        //     onto points, so a 3-player match never once used the 4th spawn.
+        Console.WriteLine("4d. every spawn point gets used");
+        foreach (int P in new[] { 2, 3, 4, 5 })
+            foreach (int N in new[] { 4, 6 })
+            {
+                var players = Enumerable.Range(0, P).ToList();
+                var used = new HashSet<int>();
+                for (int round = 0; round < 400; round++)
+                    foreach (int p in players)
+                        used.Add(SpawnAssignment.Assign(p, players, N, round, 0).SpawnPointIndex);
+                Check(used.Count == N, $"P={P} N={N} used only {used.Count}/{N} spawn points");
+            }
+
         // 5. Angles stay inside one turn and a lone player is never displaced.
         Console.WriteLine("5. offsets sane");
         for (int round = 0; round < 100; round++)

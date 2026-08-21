@@ -46,6 +46,24 @@ round together, so the gap between any two of them is fixed for the whole match.
 That number is the justification for this plugin existing; it is measured, not
 assumed.
 
+**4c. Small lobbies vary too.** At 4 players or fewer on a 4-point map nobody
+shares a point, so "who shares" measures nothing. The metric there is how many
+distinct relative positions a pair ever occupies (max 3 when nobody shares):
+
+| Players | Vanilla | Spawn Shuffle |
+|---|---|---|
+| 2 | 1.0 | 3.0 |
+| 3 | 1.0 | 3.0 |
+| 4 | 1.0 | 3.0 |
+
+Vanilla sees exactly one arrangement for the entire match at every size.
+
+**4d. Every spawn point gets used.** A regression test, and it earned its place:
+an earlier version of this code mapped seats straight onto point indices, so a
+3-player match on a 4-point map never once used the fourth spawn, and two
+players were always placed on adjacent points. Shuffling the spawn points
+independently of the players fixed both; this test fails if that regresses.
+
 **5. Offsets are sane.** A player alone at a point is never displaced (offset
 exactly zero), and every angle falls within one full turn.
 

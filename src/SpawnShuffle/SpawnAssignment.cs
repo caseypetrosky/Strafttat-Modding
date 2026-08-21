@@ -44,7 +44,9 @@ namespace SpawnShuffle
     /// </para>
     /// <para>
     /// This instead deals players into seats through a per-round permutation, so
-    /// both the grouping and the ordering change every round.
+    /// both the grouping and the ordering change every round. The block of points
+    /// spawn points are shuffled too, so every spawn a map offers gets used even
+    /// when there are fewer players than points.
     /// </para>
     /// <para>
     /// <b>The determinism requirement is not decorative.</b> Each player's spawn
@@ -88,10 +90,26 @@ namespace SpawnShuffle
                 return new SpawnSlot(Mod(roundIndex + playerId, spawnPointCount), 0, 1);
 
             int seat = Deal(index, seatCount, Seed(roundIndex, salt));
-            int spawnPointIndex = seat % spawnPointCount;
 
+            // Seats are dealt round-robin onto points, so the residue decides who
+            // shares a point with whom. The points themselves are then shuffled
+            // independently, which decides where on the map that happens.
+            //
+            // Shuffling the points matters more than it looks. Mapping seats
+            // straight onto points would confine an N-player match to the first
+            // N spawns, so on a four-point map a three-player round would never
+            // once use the fourth spawn - a whole corner of the map unused all
+            // night. It would also fix the shape of small lobbies: two players
+            // would always land on adjacent points, never opposite ones. A fresh
+            // permutation each round gives a different subset, in a different
+            // order, so distance between players varies too.
+            int residue = seat % spawnPointCount;
+            int spawnPointIndex = Permutation(spawnPointCount, Seed(roundIndex, salt ^ 0x2545F491))[residue];
+
+            // Occupancy is a property of the residue, not the rotated index:
+            // rotating moves a cluster, it does not change who is in it.
             return new SpawnSlot(spawnPointIndex, seat / spawnPointCount,
-                                 OccupantsOf(spawnPointIndex, seatCount, spawnPointCount));
+                                 OccupantsOf(residue, seatCount, spawnPointCount));
         }
 
         /// <summary>
@@ -120,22 +138,30 @@ namespace SpawnShuffle
         /// keeps the function pure, and at ten players the cost is nothing next
         /// to spawning a character.
         /// </remarks>
-        private static int Deal(int index, int seatCount, uint seed)
+        private static int Deal(int index, int seatCount, uint seed) =>
+            Permutation(seatCount, seed)[index];
+
+        /// <summary>
+        /// A seeded shuffle of 0..count-1. Used for both the seat deal and the
+        /// spawn point order, from different seeds.
+        /// </summary>
+        private static int[] Permutation(int count, uint seed)
         {
-            var seats = new int[seatCount];
-            for (int i = 0; i < seatCount; i++) seats[i] = i;
+            var items = new int[count];
+            for (int i = 0; i < count; i++) items[i] = i;
 
             // Walk backwards so the swap range is [0, i], the standard unbiased
-            // form. NextBelow draws from our own PRNG, never UnityEngine.Random,
-            // whose global state would break reproducibility across calls.
+            // Fisher-Yates form. NextBelow draws from our own PRNG, never
+            // UnityEngine.Random, whose global state would break reproducibility
+            // across the separate per-player calls.
             var rng = seed;
-            for (int i = seatCount - 1; i > 0; i--)
+            for (int i = count - 1; i > 0; i--)
             {
                 int j = (int)NextBelow(ref rng, (uint)(i + 1));
-                (seats[i], seats[j]) = (seats[j], seats[i]);
+                (items[i], items[j]) = (items[j], items[i]);
             }
 
-            return seats[index];
+            return items;
         }
 
         /// <summary>How many seats land on one spawn point, given round-robin dealing.</summary>
