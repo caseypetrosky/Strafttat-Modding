@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Spawn re-dealing. Shared settings come from ../../Directory.Build.props.
+
+       No Assembly-CSharp reference on purpose: everything game-specific goes
+       through GameAccess via AccessTools, so a game update degrades to a logged
+       warning and vanilla spawns rather than a plugin that won't load. -->
+
+  <PropertyGroup>
+    <AssemblyName>SpawnShuffle</AssemblyName>
+    <RootNamespace>SpawnShuffle</RootNamespace>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+</Project>

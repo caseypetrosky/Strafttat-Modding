@@ -9,9 +9,13 @@ FishNet 3.10.8, BepInEx 5).
 src/
   MoreStraftsRecon/   Read-only recon plugin — dumps hierarchy, types, live values
   LoopbackLab/        Test harness — several game instances on one PC
+  SpawnShuffle/       Re-deals spawn points each round so neighbours change
+tests/
+  SpawnAssignmentTests/  Runs SpawnShuffle's deal logic off the game
 docs/
-  RECON-FINDINGS.md   What the lobby actually looks like, with source references
-  SOLO-TESTING.md     Why one-account multi-instance is hard, and the way through
+  RECON-FINDINGS.md      What the lobby actually looks like, with source references
+  SOLO-TESTING.md        Why one-account multi-instance is hard, and the way through
+  SPAWN-SHUFFLE-TESTS.md What the spawn tests check, and the measured numbers
 straftat DATA FROM GALE(Thunderstore Fork)/
                       Installed BepInEx profile: mod DLLs, configs, real log output
 Directory.Build.props Shared build settings — GameDir lives here
@@ -62,6 +66,13 @@ on one machine can play together, working around FishySteamworks using Steam IDs
 as network addresses. Disabled by default; safe to leave installed.
 See its README — especially the note on why it needs a restart.
 
+**SpawnShuffle** — vanilla spawns everyone at
+`spawnPoints[(round + playerId) % count]`, so the whole arrangement rotates in
+lockstep and the gap between any two players never changes: measured over 300
+rounds, a given pair's pairing changes 0.0% of the time. This re-deals players
+into spawn points each round. Enabled by default; its decision logic is
+unit-tested off the game.
+
 ## Where things stand
 
 Recon is done: `docs/RECON-FINDINGS.md` answers the four questions that were
@@ -72,7 +83,19 @@ per-map spawn-point limit, and the recommended path is a unified GPL fork of
 moreStrafts with the UI layer written fresh.
 
 Next up is unblocking testing (LoopbackLab's first in-game run), then the fork
-itself.
+itself. SpawnShuffle is the first gameplay change: self-contained, works with or
+without moreStrafts, and a useful trial run of the patching patterns a fork
+would lean on.
+
+## Testing
+
+```bash
+cd tests/SpawnAssignmentTests && dotnet run   # exit 0 = all checks passed
+```
+
+Logic that can be made independent of Unity is kept that way and tested here.
+Anything touching the live game is marked in its README as compile-verified but
+not yet run.
 
 ## Licensing
 

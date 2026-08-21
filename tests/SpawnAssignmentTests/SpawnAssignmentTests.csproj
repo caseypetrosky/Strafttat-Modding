@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Runs SpawnShuffle's assignment logic off the game.
+       This is possible because SpawnAssignment is pure: no Unity types, no game
+       state, no ambient randomness. `dotnet run` from this folder; exit code 0
+       means every check passed.
+
+       Deliberately outside Directory.Build.props' reach for Unity/BepInEx refs:
+       it needs none of them, so it is a plain console app. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>SpawnAssignmentTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../src/SpawnShuffle/SpawnAssignment.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+
+</Project>
