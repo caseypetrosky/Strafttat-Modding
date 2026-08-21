@@ -187,6 +187,41 @@ class Program
             }
         }
 
+        // 7. The two invariants the design promises:
+        //      players <= points  ->  everyone on their own point, nobody sharing
+        //      players >  points  ->  every point occupied, and loads even
+        //    The second is what stops three players piling onto one spawn while
+        //    another sits empty; round-robin dealing gives it for free, but it is
+        //    a stated requirement so it gets asserted rather than assumed.
+        Console.WriteLine("7. spawn coverage invariants");
+        foreach (int N in new[] { 2, 4, 6 })
+        foreach (int P in new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })
+        {
+            var players = Enumerable.Range(0, P).ToList();
+            for (int round = 0; round < 300; round++)
+            {
+                var perPoint = new Dictionary<int, int>();
+                foreach (int p in players)
+                {
+                    var slot = SpawnAssignment.Assign(p, players, N, round, 0);
+                    perPoint[slot.SpawnPointIndex] = perPoint.GetValueOrDefault(slot.SpawnPointIndex) + 1;
+                }
+
+                if (P <= N)
+                {
+                    Check(perPoint.Count == P, $"P={P} N={N}: {perPoint.Count} points used, expected {P} separate ones");
+                    Check(perPoint.Values.All(c => c == 1), $"P={P} N={N}: someone shared a point when they need not");
+                }
+                else
+                {
+                    Check(perPoint.Count == N, $"P={P} N={N}: only {perPoint.Count}/{N} points occupied");
+                    int min = perPoint.Values.Min(), max = perPoint.Values.Max();
+                    Check(max - min <= 1, $"P={P} N={N}: uneven load, {min}..{max} per point");
+                    Check(min >= 1, $"P={P} N={N}: a spawn point was left empty");
+                }
+            }
+        }
+
         // 6. Degenerate inputs must not throw.
         Console.WriteLine("6. edge cases");
         var none = new List<int>();
