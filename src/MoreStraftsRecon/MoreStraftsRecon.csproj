@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Read-only recon plugin. Shared settings (TFM, GameDir, BepInEx,
+       core Unity refs, copy-to-plugins) come from ../../Directory.Build.props. -->
+
+  <PropertyGroup>
+    <AssemblyName>MoreStraftsRecon</AssemblyName>
+    <RootNamespace>MoreStraftsRecon</RootNamespace>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Scanned reflectively at runtime by TypeScanner. Referenced so the
+         assembly is guaranteed loaded and resolvable. -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(ManagedDir)/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <!-- Only needed if you extend the dumper to read UI text components.
+         The current code reads text generically via reflection, so these
+         stay commented out. Uncomment if you add direct uGUI/TMP usage. -->
+    <!--
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(ManagedDir)/UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(ManagedDir)/Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    -->
+  </ItemGroup>
+
+</Project>

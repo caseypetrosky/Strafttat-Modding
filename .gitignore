@@ -5,3 +5,6 @@ obj/
 .vs/
 .idea/
 recon-dumps/
+
+# Local reference DLLs (game assemblies, never committed)
+libs/
