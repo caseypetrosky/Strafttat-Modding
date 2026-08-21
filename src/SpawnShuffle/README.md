@@ -31,11 +31,32 @@ sharing/not-sharing a spawn point:
 
 Vanilla is not "rarely" — it is *never*.
 
+**At 4 players or fewer** nobody shares a point, so the question is instead
+whether the *arrangement* changes — measured as how many distinct relative
+positions a given pair ever occupies over 400 rounds (3 is the most possible
+when nobody shares):
+
+| Players (4 spawn points) | Vanilla | Spawn Shuffle |
+|---|---|---|
+| 2  | 1.0 | 3.0 |
+| 3  | 1.0 | 3.0 |
+| 4  | 1.0 | 3.0 |
+
+Vanilla sees exactly **one** arrangement, forever: if someone starts one spawn
+point away from you in round 1, they are one spawn point away for the rest of
+the match. This reaches every arrangement available.
+
 ## What this does
 
 Each round, players are dealt into seats through a permutation seeded by the
-round number, then seats map round-robin onto spawn points. Both who shares a
-point and the order around it change from round to round.
+round number, and the map's spawn points are shuffled independently. Seats then
+map round-robin onto that shuffled order, so who shares a point, the order
+around it, and which part of the map is used all change from round to round.
+
+Shuffling the points as well as the players is what keeps small lobbies honest:
+mapping seats straight onto points would confine a 3-player match to the first
+three spawns (never using the fourth) and would always leave two players on
+adjacent points rather than sometimes opposite ones.
 
 Where more players than points exist, everyone sharing a point is spread evenly
 around a small circle (`ClusterRadius`, default 0.6 m), rotated a little each
