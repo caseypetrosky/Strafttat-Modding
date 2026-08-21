@@ -37,28 +37,58 @@ Two findings make a loopback path realistic:
    game on a non-Steam transport during development — this is a supported-ish
    code path, not a hack we invented.
 
-## What a "LoopbackLab" plugin has to do
+## The swap must happen at startup, not on a hotkey
 
-A small BepInEx plugin (separate from the read-only recon plugin — this one
-mutates state on purpose) with two hotkeys:
+The obvious design — a hotkey that assigns `TransportManager.Transport` when you
+want to test — **does not work**, and fails silently, which is worse. Reading
+FishNet 3.10.8's own source (`Managing/Transporting/TransportManager.cs`,
+`Managing/NetworkManager.cs`) shows why:
 
-**Host (instance A):**
-1. Add a `Tugboat` component next to the `NetworkManager`, set its port
-   (e.g. 7770), and assign it as `InstanceFinder.TransportManager.Transport`.
-2. Start the server (`ServerManager.StartConnection()`) and the local client
-   (`ClientManager.StartConnection()`), replacing the FishySteamworks calls at
-   `SteamLobby.cs:464-465`.
-3. Spawn the scene-motor: vanilla hosting instantiates `_sceneMotorPrefab` and
-   `ServerManager.Spawn`s it (`SteamLobby.cs:470-471`). The prefab is a private
-   field on `SteamLobby` — grab it with
-   `AccessTools.FieldRefAccess` (HarmonyX) and repeat those two lines.
-4. Skip every `SteamMatchmaking.*` call — that's presentation (lobby name,
+1. `TransportManager.InitializeOnce_Internal` calls `Transport.Initialize(...)`
+   on whatever transport is assigned at that moment, and caches per-channel MTUs
+   from it.
+2. `NetworkManager` then initialises `ClientManager` (line 317) and
+   `ServerManager` (line 318), and **each subscribes its handlers to that
+   specific transport instance's events** — `OnClientReceivedData`,
+   `OnServerConnectionState`, `OnRemoteConnectionState` and friends
+   (`ServerManager.cs:442-458`, `ClientManager.cs:217-236`).
+
+Those subscriptions are made once and never re-pointed. Assign a different
+transport afterwards and the connection *appears* to start while the managers go
+on listening to the old transport — no data is ever processed, and nothing logs
+an error.
+
+So the swap is a Harmony **prefix on `TransportManager.InitializeOnce_Internal`**,
+which runs before any of that binding. Initialize and every subscription then
+land on Tugboat naturally, with no re-subscription trickery and no reflection
+into FishNet internals. The cost is that loopback mode is a startup decision:
+config toggle plus restart, not a hotkey.
+
+## What the LoopbackLab plugin does
+
+A BepInEx plugin (separate from the read-only recon plugin — this one mutates
+state on purpose), implemented in `src/LoopbackLab/`:
+
+**At startup:** the prefix above adds a `Tugboat` component to the
+`NetworkManager` GameObject, sets port / max clients / client address, and
+assigns it — but only when `Loopback.Enabled` is true, so the plugin is inert
+during normal online play.
+
+**Host (instance A), on F9:**
+1. `ServerManager.StartConnection()` then `ClientManager.StartConnection()`,
+   replacing the FishySteamworks calls at `SteamLobby.cs:464-465`. These
+   manager-level calls are the supported entry points; the game's own direct
+   transport call is the unusual one.
+2. Spawn the scene motor: vanilla hosting instantiates `_sceneMotorPrefab` and
+   `ServerManager.Spawn`s it (`SteamLobby.cs:471-472`). Nothing else spawns it
+   and other systems read `SceneMotor.Instance`, so it has to be reproduced —
+   reached reflectively via `AccessTools`, since it's a private `[SerializeField]`.
+3. Skip every `SteamMatchmaking.*` call — that's presentation (lobby name,
    browser visibility), not connectivity.
 
-**Join (instance B, same machine):**
-1. Same transport swap.
-2. `ClientManager.StartConnection("127.0.0.1")` — the Tugboat equivalent of
-   `SteamLobby.cs:563-565`, no Steam lobby data needed.
+**Join (instance B, same machine), on F10:**
+`ClientManager.StartConnection("127.0.0.1")` — the Tugboat equivalent of
+`SteamLobby.cs:564-565`, no Steam lobby data needed.
 
 Second instance launch: run `STRAFTAT.exe` directly from the install folder
 (don't use the Steam "Play" button twice). The repo ships `steam_appid.txt`,
@@ -67,11 +97,10 @@ keep working in both instances, we only bypass matchmaking.
 
 ## Known risks / open questions (first run answers these)
 
-- **Transport swap timing.** FishNet wires the transport in
-  `TransportManager.Awake`. Swapping after that generally works if done while
-  fully disconnected, but this is *the* thing to verify first. If the property
-  swap misbehaves, plan B is patching `TransportManager` during startup so
-  Tugboat is selected before anything connects.
+- **Transport swap timing — resolved by reading FishNet's source**, see above.
+  The prefix-on-initialisation approach is what the code demands; the remaining
+  question is only whether the patch lands early enough in practice (BepInEx
+  plugin `Awake` runs before scene load, so it should).
 - **Duplicate Steam IDs.** Both instances report the same
   `SteamUser.GetSteamID()`. FishNet's own player identity (`PlayerId`,
   connection ids) is transport-level and will be distinct, but UI keyed on

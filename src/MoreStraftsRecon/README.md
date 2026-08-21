@@ -18,35 +18,17 @@ Output lands in `BepInEx/recon-dumps/`.
 
 ## Setup
 
-**1. Install the .NET SDK** (8.0 or newer) — https://dotnet.microsoft.com/download
-
-**2. Install BepInEx 5.4.21 into STRAFTAT** if you haven't already. Easiest via
-the Thunderstore BepInExPack for STRAFTAT. Launch the game once afterwards so it
-generates the folder structure.
-
-**3. Turn on the console** — edit `BepInEx/config/BepInEx.cfg`:
-
-```ini
-[Logging.Console]
-Enabled = true
-```
-
-Without this you're debugging blind. Do it now.
-
-**4. Point the project at your game.** Open `MoreStraftsRecon.csproj` and edit
-the `<GameDir>` line to your STRAFTAT install path. Steam → right-click STRAFTAT
-→ Manage → Browse local files.
-
-**5. Build:**
+One-time setup (SDK, BepInEx, console logging, `GameDir`) is in the
+[repo README](../../README.md). Once that's done:
 
 ```bash
-dotnet build
+dotnet build src/MoreStraftsRecon
 ```
 
 The DLL auto-copies into `BepInEx/plugins/MoreStraftsRecon/`. That's your whole
 iteration loop: `dotnet build`, relaunch game, test.
 
-**6. Launch.** You should see this in the console:
+**Launch.** You should see this in the console:
 
 ```
 [Info   :MoreStrafts Recon] MoreStrafts Recon v0.1.0 loaded.
@@ -65,7 +47,7 @@ Do these in order and keep the output files:
    or an array/list with a hardcoded length of 4.
 
 2. Note the type names that come back. Set `Recon.InspectType` in
-   `BepInEx/config/com.yourname.morestraftsrecon.cfg` to the most promising one
+   `BepInEx/config/com.caseypetrosky.morestraftsrecon.cfg` to the most promising one
    (a manager or lobby class), relaunch, press **F8**.
 
 3. **Host a lobby, then press F6.** Open `hierarchy_*.txt` and find the player
@@ -96,9 +78,15 @@ anything you distribute.
 
 ## Notes
 
-- If `dotnet build` can't find `BepInEx.Core`, check that `NuGet.config` is next
-  to the `.csproj` — BepInEx isn't on nuget.org.
+- Much of what a first session was meant to discover is already written up in
+  [docs/RECON-FINDINGS.md](../../docs/RECON-FINDINGS.md), with `file:line`
+  references into the game source. Use the dumps to confirm it at runtime and to
+  go past it, not to rediscover it.
+- If `dotnet build` can't find `BepInEx.Core`, check `NuGet.config` at the repo
+  root — BepInEx isn't on nuget.org.
 - If you get missing-assembly errors, look in your `STRAFTAT_Data/Managed/`
   folder and adjust the `<Reference>` entries. Not every Unity build ships the
-  same module DLLs.
-- If `netstandard2.1` gives you grief, try `net472` instead.
+  same module DLLs. This code has been compile-checked against BepInEx 5.4.23.5
+  and Unity 2021.3 references, so a failure here is most likely a path problem.
+- If `netstandard2.1` gives you grief, change `TargetFramework` in
+  `Directory.Build.props` to `net472`.
