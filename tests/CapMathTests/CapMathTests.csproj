@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Compile Include="../../src/StraftatCap/CapMath.cs" />
+    <Compile Include="../../src/Shared/StaticAccess.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 

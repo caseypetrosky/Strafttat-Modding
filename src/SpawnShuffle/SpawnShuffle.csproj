@@ -12,4 +12,10 @@
     <Version>0.1.0</Version>
   </PropertyGroup>
 
+  <!-- Shared helpers, compiled into each plugin rather than referenced,
+       so every plugin stays a single self-contained DLL. -->
+  <ItemGroup>
+    <Compile Include="../Shared/*.cs" />
+  </ItemGroup>
+
 </Project>

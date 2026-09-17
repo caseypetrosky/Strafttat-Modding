@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using StraftatModding;
 using UnityEngine;
 
 namespace SpawnShuffle
@@ -28,7 +29,7 @@ namespace SpawnShuffle
         private static FieldInfo _clientScript;         // PlayerManager.ClientScript
         private static FieldInfo _playerId;             // ClientInstance.PlayerId
         private static FieldInfo _playerInstances;      // ClientInstance.playerInstances (static)
-        private static PropertyInfo _scoreInstance;     // ScoreManager.Instance
+        private static Func<object> _scoreInstance;     // ScoreManager.Instance
         private static FieldInfo _takeIndex;            // ScoreManager.TakeIndex
         private static MethodInfo _setActiveSpawnPoints;// PlayerManager.SetActiveSpawnPoints
         private static MethodInfo _spawnAt;             // PlayerManager.SpawnPlayer(int,int,Vector3,Quaternion)
@@ -64,7 +65,8 @@ namespace SpawnShuffle
                 _clientScript = AccessTools.Field(playerManager, "ClientScript");
                 _playerId = AccessTools.Field(clientInstance, "PlayerId");
                 _playerInstances = AccessTools.Field(clientInstance, "playerInstances");
-                _scoreInstance = AccessTools.Property(scoreManager, "Instance");
+                // Field or property - STRAFTAT declares this one as a field.
+                _scoreInstance = StaticAccess.Getter(scoreManager, "Instance");
                 _takeIndex = AccessTools.Field(scoreManager, "TakeIndex");
                 _setActiveSpawnPoints = AccessTools.Method(playerManager, "SetActiveSpawnPoints");
                 _spawnAt = AccessTools.Method(playerManager, "SpawnPlayer",
@@ -138,7 +140,7 @@ namespace SpawnShuffle
         /// <summary>The round counter. Synced to clients by the game as a SyncVar.</summary>
         public static int RoundIndex()
         {
-            var score = _scoreInstance.GetValue(null);
+            var score = _scoreInstance();
             return score == null ? 0 : (int)_takeIndex.GetValue(score);
         }
 

@@ -7,6 +7,7 @@ FishNet 3.10.8, BepInEx 5).
 
 ```
 src/
+  Shared/             Helpers compiled into each plugin (no cross-plugin refs)
   MoreStraftsRecon/   Read-only recon plugin — dumps hierarchy, types, live values
   LoopbackLab/        Test harness — several game instances on one PC
   SpawnShuffle/       Re-deals spawn points each round so neighbours change

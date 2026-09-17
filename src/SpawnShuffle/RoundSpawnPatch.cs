@@ -111,7 +111,8 @@ namespace SpawnShuffle
             try
             {
                 var gameManagerType = AccessTools.TypeByName("GameManager");
-                var instance = AccessTools.Property(gameManagerType, "Instance")?.GetValue(null);
+                // Field or property; GameManager.Instance is a field here.
+                var instance = StraftatModding.StaticAccess.Read(gameManagerType, "Instance");
                 if (instance == null) return false;
 
                 var playingTeams = AccessTools.Field(gameManagerType, "playingTeams");

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using StraftatModding;
 
 namespace StraftatCap
 {
@@ -25,7 +26,7 @@ namespace StraftatCap
         private static bool _resolved;
         private static bool _usable;
 
-        private static PropertyInfo _steamLobbyInstance;
+        private static Func<object> _lobby;
         private static FieldInfo _maxPlayers;
         private static FieldInfo _maxPlayersDropdown;
         private static FieldInfo _players;
@@ -57,7 +58,8 @@ namespace StraftatCap
                     return;
                 }
 
-                _steamLobbyInstance = AccessTools.Property(steamLobby, "Instance");
+                // Field or property - STRAFTAT uses a plain static field here.
+                _lobby = StaticAccess.Getter(steamLobby, "Instance");
                 _maxPlayers = AccessTools.Field(steamLobby, "maxPlayers");
                 _maxPlayersDropdown = AccessTools.Field(steamLobby, "MaxPlayersDropdown");
                 _players = AccessTools.Field(steamLobby, "players");
@@ -73,7 +75,7 @@ namespace StraftatCap
                     _refreshShownValue = AccessTools.Method(dropdown, "RefreshShownValue");
                 }
 
-                _usable = _steamLobbyInstance != null && _maxPlayers != null
+                _usable = _lobby != null && _maxPlayers != null
                           && _maxPlayersDropdown != null && _clearOptions != null
                           && _addOptions != null && _dropdownValue != null;
 
@@ -87,10 +89,13 @@ namespace StraftatCap
             }
         }
 
+        /// <summary>Which members could not be found, for reporting.</summary>
+        public static string MissingMembers() { if (!_resolved) Resolve(); return Missing(); }
+
         private static string Missing()
         {
             var missing = new List<string>();
-            if (_steamLobbyInstance == null) missing.Add("SteamLobby.Instance");
+            if (_lobby == null) missing.Add("SteamLobby.Instance");
             if (_maxPlayers == null) missing.Add("SteamLobby.maxPlayers");
             if (_maxPlayersDropdown == null) missing.Add("SteamLobby.MaxPlayersDropdown");
             if (_clearOptions == null) missing.Add("TMP_Dropdown.ClearOptions");
@@ -100,7 +105,7 @@ namespace StraftatCap
         }
 
         /// <summary>The live SteamLobby, or null before one exists.</summary>
-        public static object Lobby() => _steamLobbyInstance?.GetValue(null);
+        public static object Lobby() => _lobby?.Invoke();
 
         /// <summary>The lobby's current player cap, or 0 if unavailable.</summary>
         public static int MaxPlayers()

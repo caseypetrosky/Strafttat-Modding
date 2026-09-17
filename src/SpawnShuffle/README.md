@@ -144,6 +144,16 @@ the two offsets stack, so players may end up slightly further apart than
 None of the addon's code was reused here; it has no public source and no
 license. It was read only to understand the existing behaviour.
 
+## Known issue fixed in 0.1.1
+
+Versions before this resolved `ScoreManager.Instance` with
+`AccessTools.Property`. STRAFTAT declares it as a static **field**, so the
+lookup returned null, `GameAccess` concluded the game had changed, and the
+plugin stood down on every spawn — compiling cleanly and logging a plausible
+warning while never actually re-dealing anything. Singletons are now read
+through `StaticAccess`, which accepts either form, and a regression test covers
+it.
+
 ## Status
 
 The assignment logic is **unit-tested off the game** (see

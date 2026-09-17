@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using StraftatCap;
+using StraftatModding;
 
 class Program
 {
@@ -69,7 +70,38 @@ class Program
         Check(CapMath.UpdateWouldApply(4, 4), "equal applies");
         Check(!CapMath.UpdateWouldApply(6, 4), "shrinking below the crowd is ignored");
 
+        // 8. StaticAccess must read a singleton however it is declared.
+        //    This is a regression test for a shipped bug: every STRAFTAT
+        //    singleton (SteamLobby, ScoreManager, GameManager) is a static
+        //    FIELD, but the bridges asked AccessTools for a PROPERTY. That
+        //    returns null, so the plugins decided the game had changed and
+        //    stood down - compiling cleanly and logging a plausible warning
+        //    while doing nothing at all.
+        Console.WriteLine("8. static singletons resolve as field or property");
+        Check(StaticAccess.Read(typeof(FieldSingleton), "Instance") is FieldSingleton,
+              "reads a static FIELD (how STRAFTAT declares them)");
+        Check(StaticAccess.Read(typeof(PropertySingleton), "Instance") is PropertySingleton,
+              "reads a static PROPERTY");
+        Check(StaticAccess.Getter(typeof(FieldSingleton), "Nope") == null,
+              "missing member yields null rather than throwing");
+        Check(StaticAccess.Getter(null, "Instance") == null, "null type is handled");
+        Check(StaticAccess.Getter(typeof(FieldSingleton), "NotStatic") == null,
+              "an instance member is not mistaken for a static one");
+
         Console.WriteLine(failures == 0 ? "\nALL PASS" : $"\n{failures} FAILURES");
         Environment.Exit(failures == 0 ? 0 : 1);
     }
+}
+
+
+// Stand-ins for the two ways a Unity singleton gets written.
+class FieldSingleton
+{
+    public static FieldSingleton Instance = new FieldSingleton();
+    public FieldSingleton NotStatic = null;
+}
+
+class PropertySingleton
+{
+    public static PropertySingleton Instance { get; } = new PropertySingleton();
 }

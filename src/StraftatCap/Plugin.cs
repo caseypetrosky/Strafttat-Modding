@@ -104,7 +104,10 @@ namespace StraftatCap
 
                 if (!GameBridge.Usable)
                 {
-                    Log.Warn("game members unresolved - the cap is NOT being applied.");
+                    // Name them here rather than only at resolve time. That
+                    // warning is emitted once, early, and scrolls away long
+                    // before anyone thinks to press F9.
+                    Log.Warn($"the cap is NOT being applied. Could not find: {GameBridge.MissingMembers()}");
                     Log.Info("--------------------");
                     return;
                 }
