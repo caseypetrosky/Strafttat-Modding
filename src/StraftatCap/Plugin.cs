@@ -21,7 +21,10 @@ namespace StraftatCap
     /// round-end screen or the tab screen, all of which still assume four
     /// players in ways that need real UI work rather than a bigger number.
     /// </remarks>
+    // Soft dependency: we do not need moreStrafts, but if it is installed we
+    // want to load after it so the check below sees it.
     [BepInPlugin(Guid, Name, Version)]
+    [BepInDependency(StraftatModding.ModPresence.MoreStraftsGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "com.caseypetrosky.straftatcap";
@@ -34,6 +37,19 @@ namespace StraftatCap
         /// <summary>The configured ceiling, already clamped to what is supported.</summary>
         internal static int MaxPlayers => CapMath.Clamp(Settings?.MaxPlayers?.Value ?? CapMath.MaxPlayers);
 
+        /// <summary>
+        /// False when another mod owns the cap, in which case every patch here
+        /// becomes a no-op.
+        /// </summary>
+        /// <remarks>
+        /// moreStrafts raises the cap as well. Two mods writing the same
+        /// dropdown and the same transport value would race, and whichever wrote
+        /// last would win - which is not a thing to leave to chance. Standing
+        /// down is the polite default; the F9 report still works, so this is
+        /// also a way to inspect a moreStrafts lobby.
+        /// </remarks>
+        internal static bool Active { get; private set; } = true;
+
         private int _lastTickFrame = -1;
 
         private void Awake()
@@ -41,7 +57,19 @@ namespace StraftatCap
             Log.Init(Logger);
             Settings = new CapConfig(Config);
 
+            bool deferring = Settings.DeferToMoreStrafts.Value && StraftatModding.ModPresence.MoreStrafts;
+            Active = Settings.Enabled.Value && !deferring;
+
+            // Patch regardless; each patch checks Active. Keeping patching
+            // unconditional means the config decides behaviour, not whether the
+            // patch happened to be applied.
             new Harmony(Guid).PatchAll(typeof(Plugin).Assembly);
+
+            Log.Info($"detected mods: {StraftatModding.ModPresence.Summary()}");
+            if (deferring)
+                Log.Info("moreStrafts is installed and owns the cap; standing down. "
+                         + "F9 still reports, so this can be used to inspect its lobbies. "
+                         + "Set Cap.DeferToMoreStrafts = false to take over instead.");
 
             // Two tick sources, and a scene hook, because this game does not
             // reliably call Update on plugin components - see the recon notes.
@@ -49,7 +77,7 @@ namespace StraftatCap
             Application.onBeforeRender += OnBeforeRender;
             SceneManager.sceneLoaded += OnSceneLoaded;
 
-            Log.Info(Settings.Enabled.Value
+            Log.Info(Active
                 ? $"{Name} v{Version} loaded - cap up to {MaxPlayers} players. "
                   + $"Press {Settings.ReportKey.Value} in a lobby for a status report."
                 : $"{Name} v{Version} loaded - disabled in config, cap stays vanilla.");
@@ -61,7 +89,7 @@ namespace StraftatCap
             // subscription takes.
             try
             {
-                if (Settings.Enabled.Value) TransportCap.EnsureSubscribed();
+                if (Active) TransportCap.EnsureSubscribed();
             }
             catch (Exception e)
             {
@@ -81,6 +109,7 @@ namespace StraftatCap
 
                 if (Settings == null || !Settings.Enabled.Value) return;
 
+                // The report stays available even when standing down.
                 if (Settings.ReportKey.Value.IsDown() || Input.GetKeyDown(KeyCode.F9))
                     Report();
             }
@@ -100,6 +129,8 @@ namespace StraftatCap
             try
             {
                 Log.Info("---- cap report ----");
+                Log.Info($"this mod active         : {Active}"
+                         + (Active ? "" : " (standing down - another mod owns the cap)"));
                 Log.Info($"configured ceiling      : {MaxPlayers}");
 
                 if (!GameBridge.Usable)

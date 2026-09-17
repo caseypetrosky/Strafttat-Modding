@@ -23,7 +23,7 @@ namespace StraftatCap
         {
             try
             {
-                if (!Plugin.Settings.Enabled.Value || !GameBridge.Usable) return;
+                if (!Plugin.Active || !GameBridge.Usable) return;
 
                 int max = Plugin.MaxPlayers;
                 int expanded = GameBridge.ExpandAllMaxPlayersDropdowns(max);
@@ -57,7 +57,7 @@ namespace StraftatCap
         {
             try
             {
-                if (!Plugin.Settings.Enabled.Value || !GameBridge.Usable) return;
+                if (!Plugin.Active || !GameBridge.Usable) return;
                 TransportCap.Apply("lobby size changed");
             }
             catch (Exception e)
@@ -81,7 +81,7 @@ namespace StraftatCap
         {
             try
             {
-                if (!Plugin.Settings.Enabled.Value || !GameBridge.Usable) return;
+                if (!Plugin.Active || !GameBridge.Usable) return;
 
                 // Both dropdowns again: the in-lobby one is only built once the
                 // lobby window exists, so Start alone may have missed it.
@@ -97,7 +97,7 @@ namespace StraftatCap
         {
             try
             {
-                if (!Plugin.Settings.Enabled.Value || !GameBridge.Usable) return;
+                if (!Plugin.Active || !GameBridge.Usable) return;
                 TransportCap.EnsureSubscribed();
                 TransportCap.Apply("lobby created");
             }
@@ -175,7 +175,7 @@ namespace StraftatCap
         {
             try
             {
-                if (!Plugin.Settings.Enabled.Value) return;
+                if (!Plugin.Active) return;
 
                 int clamped = CapMath.Clamp(maxPlayers);
                 if (clamped != maxPlayers)

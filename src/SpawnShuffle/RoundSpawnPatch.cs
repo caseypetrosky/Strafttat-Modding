@@ -70,7 +70,7 @@ namespace SpawnShuffle
                 if (point == null) return true;
 
                 var position = point.position;
-                if (SpawnAssignment.NeedsOffset(slot))
+                if (SpawnAssignment.NeedsOffset(slot) && Plugin.ShouldOffsetSharedPoints)
                 {
                     double angle = SpawnAssignment.AngleFor(slot, round, settings.Salt.Value);
                     float radius = settings.ClusterRadius.Value;

@@ -9,6 +9,7 @@ namespace StraftatCap
     {
         public readonly ConfigEntry<bool> Enabled;
         public readonly ConfigEntry<int> MaxPlayers;
+        public readonly ConfigEntry<bool> DeferToMoreStrafts;
         public readonly ConfigEntry<KeyboardShortcut> ReportKey;
 
         public CapConfig(ConfigFile config)
@@ -24,6 +25,12 @@ namespace StraftatCap
                     + "the same value: vanilla makes each client kick itself if its own copy "
                     + "of the cap is smaller than its position in the player list.",
                     new AcceptableValueRange<int>(CapMath.MinPlayers, CapMath.MaxPlayers)));
+
+            DeferToMoreStrafts = config.Bind(
+                "Cap", "DeferToMoreStrafts", true,
+                "Stand down when moreStrafts is installed, since it raises the cap too and two "
+                + "mods writing the same values would fight. Set false only if you want this "
+                + "mod to take over instead - disable moreStrafts' own capacity handling first.");
 
             ReportKey = config.Bind(
                 "Hotkeys", "Report", new KeyboardShortcut(KeyCode.F9),

@@ -127,6 +127,21 @@ leaving someone unspawned. Errors log once, not every spawn.
 using `AccessTools`, resolved once and cached. A renamed field produces a
 warning naming exactly what is missing, and the plugin stands down.
 
+## Playing nicely with the other mods
+
+This is an addon, not a replacement. It patches vanilla, needs nothing else
+installed, and cooperates with what is:
+
+| Installed | What happens |
+|---|---|
+| Nothing else | We deal the spawn points and separate players who share one. |
+| MoreStrafts_UISpawnAddon | We deal the spawn points; **it** separates players, since it already offsets every spawn. |
+
+`SharedPointOffsets` controls this — `Auto` (the default) does the above,
+`Always` offsets regardless and stacks with the addon's, `Never` never offsets.
+Both moreStrafts and the addon are declared as *soft* dependencies, so BepInEx
+loads this after them when present and it still loads alone when not.
+
 ## Interaction with MoreStrafts_UISpawnAddon
 
 Worth knowing: **moreStrafts contains no spawn code whatsoever** — the circular
@@ -134,12 +149,11 @@ spawn offsets people attribute to it come from the separate UISpawnAddon, which
 prefixes the *four-argument* `SpawnPlayer` and adds `playerId * 36°` at a fixed
 0.5 m.
 
-Since that patch sits on a different method, both apply: this plugin chooses the
-spawn point and cluster position, then the addon adds its fixed per-id nudge on
-top. That does not undo the re-dealing — grouping is still decided here — but
-the two offsets stack, so players may end up slightly further apart than
-`ClusterRadius` suggests. If it looks wrong with both installed, lower
-`ClusterRadius` (0.3–0.4 works out to roughly the same total spread).
+Since that patch sits on a different method, both would apply and the offsets
+would stack. Rather than asking you to hand-tune `ClusterRadius` around that,
+the default now detects the addon and leaves separation entirely to it — we
+decide *who shares a spawn point*, it decides *how they stand apart*. The two
+compose cleanly with no tuning.
 
 None of the addon's code was reused here; it has no public source and no
 license. It was read only to understand the existing behaviour.

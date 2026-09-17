@@ -2,6 +2,17 @@ using BepInEx.Configuration;
 
 namespace SpawnShuffle
 {
+    /// <summary>How to separate players who share a spawn point.</summary>
+    internal enum OffsetBehaviour
+    {
+        /// <summary>Defer to UISpawnAddon when it is present; otherwise do it ourselves.</summary>
+        Auto,
+        /// <summary>Always apply our own offset, whatever else is installed.</summary>
+        Always,
+        /// <summary>Never apply our own offset.</summary>
+        Never
+    }
+
     /// <summary>All tunables, bound once at startup.</summary>
     internal sealed class SpawnShuffleConfig
     {
@@ -9,6 +20,7 @@ namespace SpawnShuffle
         public readonly ConfigEntry<int> MinimumPlayers;
         public readonly ConfigEntry<bool> OverrideTeamModes;
         public readonly ConfigEntry<float> ClusterRadius;
+        public readonly ConfigEntry<OffsetBehaviour> OffsetMode;
         public readonly ConfigEntry<int> Salt;
 
         public SpawnShuffleConfig(ConfigFile config)
@@ -31,6 +43,17 @@ namespace SpawnShuffle
                 "Also re-deal in team modes. Off by default: the game has hand-tuned 2v2 "
                 + "spawn placement that keeps teammates together, and shuffling would "
                 + "break that on purpose-built maps.");
+
+            OffsetMode = config.Bind(
+                "Shuffle", "SharedPointOffsets", OffsetBehaviour.Auto,
+                "How players sharing one spawn point get separated.\n"
+                + "Auto: leave it to MoreStrafts_UISpawnAddon when that is installed, since it "
+                + "already offsets every spawn, and do it ourselves otherwise. This is the one "
+                + "you want.\n"
+                + "Always: always apply our own offset. Stacks with the addon's, so players end "
+                + "up further apart than ClusterRadius suggests.\n"
+                + "Never: never offset. Players sharing a point spawn on top of each other "
+                + "unless something else separates them.");
 
             ClusterRadius = config.Bind(
                 "Shuffle", "ClusterRadius", 0.6f,
