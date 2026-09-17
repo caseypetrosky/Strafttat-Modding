@@ -37,11 +37,11 @@ namespace MoreStraftsRecon
 
             // DontDestroyOnLoad objects live in their own hidden scene. Managers
             // and persistent UI usually end up here, so we very much want them.
-            var ddol = GetDontDestroyOnLoadScene();
-            if (ddol.HasValue && ddol.Value.IsValid())
+            var ddolRoots = GetDontDestroyOnLoadRoots();
+            if (ddolRoots.Count > 0)
             {
                 sb.AppendLine("=== SCENE: DontDestroyOnLoad ===");
-                foreach (var root in ddol.Value.GetRootGameObjects())
+                foreach (var root in ddolRoots)
                     WriteObject(sb, root.transform, 0, includeComponents);
             }
 
@@ -97,23 +97,42 @@ namespace MoreStraftsRecon
             return null;
         }
 
-        private static Scene? GetDontDestroyOnLoadScene()
+        /// <summary>
+        /// Root objects of the DontDestroyOnLoad scene, found without creating
+        /// anything.
+        /// </summary>
+        /// <remarks>
+        /// The usual trick is to spawn a throwaway GameObject, mark it
+        /// DontDestroyOnLoad and read its .scene. It works, but it has two
+        /// problems. It makes a tool that promises to be read-only quietly
+        /// mutate the game - the probe object even showed up in its own dumps,
+        /// because Destroy is deferred to the end of the frame. Worse, once the
+        /// dump is driven from a render-phase callback instead of Update,
+        /// creating and destroying GameObjects there is a reliable way to
+        /// hard-crash Unity.
+        ///
+        /// Scanning the objects already loaded costs a little more time and
+        /// nothing else: no allocation in the scene, no mutation, and safe to
+        /// call from any point in the frame.
+        /// </remarks>
+        private static List<GameObject> GetDontDestroyOnLoadRoots()
         {
-            GameObject probe = null;
-            try
+            var roots = new List<GameObject>();
+
+            foreach (var go in Resources.FindObjectsOfTypeAll<GameObject>())
             {
-                probe = new GameObject("__recon_probe");
-                UnityEngine.Object.DontDestroyOnLoad(probe);
-                return probe.scene;
+                if (go == null) continue;
+                if (go.transform.parent != null) continue;   // roots only
+
+                // Assets and prefabs report an invalid scene; only real
+                // instances carry the DontDestroyOnLoad scene.
+                var scene = go.scene;
+                if (!scene.IsValid() || scene.name != "DontDestroyOnLoad") continue;
+
+                roots.Add(go);
             }
-            catch
-            {
-                return null;
-            }
-            finally
-            {
-                if (probe != null) UnityEngine.Object.Destroy(probe);
-            }
+
+            return roots;
         }
     }
 }

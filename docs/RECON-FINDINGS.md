@@ -17,7 +17,31 @@ Steam App ID 2386720, FishNet transport is **FishySteamworks**.
 
 ## The four known unknowns — answered
 
-### 1. Are the lobby player slots clonable prefab-style siblings? — YES
+### 1. Are the lobby player slots clonable prefab-style siblings? — YES, confirmed at runtime
+
+**Runtime confirmation (2026-09-17).** An in-game hierarchy dump of `MainMenu`
+settles this directly, rather than by inference:
+
+```
+  HostGameCamera
+    Preview          <- <AboubiPreviewLobby>
+    Preview          <- <AboubiPreviewLobby>
+    Preview          <- <AboubiPreviewLobby>
+    Preview          <- <AboubiPreviewLobby>
+```
+
+Four GameObjects, all named `Preview`, all direct children of the one
+`HostGameCamera`, each carrying an `AboubiPreviewLobby`. Their subtrees are 460
+lines each and **hash identically** (`fc84eed6f3b4d575`) — not merely similar,
+byte-for-byte the same structure, spaced exactly 471 lines apart in the dump.
+
+That is the ideal case: clone any one of them under the same parent and
+reposition. Nothing about the slots is hand-placed or special-cased.
+
+The rest of this section is the original source-level reasoning, which the dump
+confirms.
+
+
 
 The lobby UI is not four hand-crafted panels. It decomposes into three parts,
 all driven by arrays on singleton controllers:
