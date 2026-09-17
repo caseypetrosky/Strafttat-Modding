@@ -125,6 +125,79 @@ source: `main` @ `a47d690` corresponds to the shipping 0.1.0.
 
 ---
 
+## Runtime findings (2026-09-17)
+
+From a live hosted lobby: hierarchy dumps, a keyword scan, and a field inspect.
+These either confirm or add to the source-level work above.
+
+### Cloning to ten works, observed
+
+The in-lobby dump contains **ten** `AboubiPreviewLobby` slots under one parent:
+the four scene-authored ones still named `Preview`, plus six UISpawnAddon
+clones named `LobbyPreview_P4` … `LobbyPreview_P9`. Not a claim from a
+changelog — the objects are in the dump. The clone-and-reposition approach is
+proven at the target player count.
+
+The row list scales cleanly too: `LobbyController.PlayerIdToListItem` is a
+`Dictionary<int, PlayerListItems>`, not an array, and rows are
+`PlayerListItem(Clone)` instantiated per player. Under `PlayersList` the
+scene provides four anchors — `HostObject`, `ClientObject`, `ClientObject (1)`,
+`ClientObject (2)`.
+
+### More hardcoded 4s, and one that is worse than an array
+
+The scan found limits the source read had not surfaced:
+
+| Where | What | Why it hurts |
+|---|---|---|
+| `RoundManager.enemyScore` | `TextMeshProUGUI[3]` — `Enemy1PlayerScore`, `Enemy2PlayerScore`, `Enemy3PlayerScore` | Scene-authored UI objects, three enemies plus self. Resizing the array is not enough; the text objects have to be built. |
+| `RoundManager.nextRoundImageFour/Five/Six` | One animation transform group per enemy | The round-end animation is authored per enemy slot. |
+| `TabScreen` | `scoreOne`, `scoreTwo`, `scoreThree`, `scoreFour` | **Four separate named fields, not an array.** Nothing to resize; any fix has to manage its own objects and ignore these fields entirely. |
+
+`TabScreen` is the important one. A fixed-length array can be transpiled or
+reallocated — four discrete fields cannot, which is why the addon reimplements
+that screen rather than extending it.
+
+### Spawn points, confirmed live
+
+`PlayerManager` in the menu scene reports
+`CurrentSpawnPoints = [2] { SpawnPointA, SpawnPointB }` and
+`SpawnPoint4v4 = [0] { }`. The 4-player set really is empty where nothing
+authored it, exactly as `SetActiveSpawnPoints` implies.
+
+### Lead: the transport cap may not be following the lobby cap
+
+In a lobby with `SteamLobby.maxPlayers = 8`, the inspect shows
+`FishySteamworks._maximumClients = 3` — the vanilla default of `4 - 1`, not the
+`7` the lobby implies.
+
+Vanilla sets the cap **twice** (`SteamLobby.cs:261-262`):
+
+```csharp
+InstanceFinder.TransportManager.Transport.SetMaximumClients(maxPlayers-1);
+_fishySteamworks.SetMaximumClients(maxPlayers-1); // okay what the fuck why does this not use fishnets transport system
+```
+
+moreStrafts makes only the first call. `SetMaximumClients` is `virtual` on
+FishNet's base `Transport`, so a proper `override` would make one call enough —
+but the dev's own double call and comment suggest FishySteamworks does something
+non-standard here, and the observed value is consistent with the
+FishySteamworks-side field never being updated.
+
+**Unconfirmed, and it needs real players to confirm.** If it is real, lobbies
+advertise more slots than the transport will accept and the extra players are
+refused at connect time — which would be easy to misread as "the mods are
+broken". Worth testing before any fork inherits the same single call.
+
+### Incidental, but useful
+
+`GameManager.Instance` resolves to `SceneMotor(Clone)` — `GameManager` lives on
+the SceneMotor prefab. That confirms LoopbackLab is right to reproduce the
+SceneMotor spawn when bypassing Steam matchmaking: without it there is no
+GameManager at all.
+
+---
+
 ## What the two mods actually do (mechanics that matter)
 
 **moreStrafts v0.1.0** — 16 Harmony patches: dropdown/transport/RPC-clamp for
