@@ -76,6 +76,36 @@ anything you distribute.
 
 ---
 
+## If the hotkeys do nothing
+
+The folder is created at startup, so an empty `recon-dumps/` means the plugin
+loaded but the dump never ran. Three different faults look identical from
+outside, so the plugin separates them.
+
+**1. Is the Update loop running?** On the first frame it logs:
+
+```
+[Info   :MoreStrafts Recon] Update loop is running; hotkeys are live.
+```
+
+No such line means no hotkey could ever fire, whatever you press.
+
+**2. Is the key reaching the game?** Set `Recon.LogKeyPresses = true`, relaunch,
+and press F6. Every function key the game sees is logged as `key seen: F6`.
+Silence means the keypress is not arriving — another mod or overlay may be
+swallowing it, or the game window was not focused.
+
+**3. Skip the keyboard entirely.** Set `Recon.AutoDumpSeconds = 10`, relaunch,
+host a lobby, and wait ten seconds. The hierarchy dump is written on a timer, no
+input involved. This is the reliable way to capture a lobby dump.
+
+Also check you are looking in the folder the log names at startup — with a mod
+manager it is inside the profile, not the game install:
+
+```
+[Info   :MoreStrafts Recon] Dumps will be written to: ...\profiles\Default\BepInEx\recon-dumps
+```
+
 ## Notes
 
 - Much of what a first session was meant to discover is already written up in
