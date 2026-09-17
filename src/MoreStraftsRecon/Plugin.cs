@@ -40,6 +40,8 @@ namespace MoreStraftsRecon
         // itself might be failing. These separate the three.
         private bool _loggedHeartbeat;
         private float _autoDumpAt = -1f;
+        private static string _tickSource;
+        private int _lastTickFrame = -1;
 
         private void Awake()
         {
@@ -95,6 +97,19 @@ namespace MoreStraftsRecon
             // is when the lobby UI exists.
             SceneManager.sceneLoaded += OnSceneLoaded;
 
+            // A second, independent per-frame tick.
+            //
+            // Unity only calls Update on a component that is alive and enabled.
+            // If the game destroys or disables this plugin's object after load,
+            // Update goes silent - while plain C# events like sceneLoaded keep
+            // firing, because they are delegates and do not care about the
+            // native Unity object at all. That failure is invisible and looks
+            // exactly like a broken hotkey.
+            //
+            // Application.onBeforeRender is a static event driven by the player
+            // loop, so it keeps ticking regardless of what happened to us.
+            Application.onBeforeRender += OnBeforeRender;
+
             Log.LogInfo($"{Name} v{Version} loaded.");
             Log.LogInfo($"Dumps will be written to: {DumpDir}");
             Log.LogInfo($"F6 = hierarchy | F7 = scan types | F8 = inspect '{_inspectType.Value}'");
@@ -104,6 +119,20 @@ namespace MoreStraftsRecon
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            ReportOwnState(scene.name);
+
+            // Last resort. A timed dump needs something to tick; if nothing ever
+            // has, waiting is pointless and the folder stays empty forever. Dump
+            // right here instead - a dump taken slightly too early still proves
+            // the pipeline works and is worth more than no dump at all.
+            if (_tickSource == null && _autoDumpSeconds.Value > 0f)
+            {
+                Log.LogWarning("No per-frame tick has run yet; dumping immediately "
+                               + "rather than waiting on a timer that may never fire.");
+                HierarchyDumper.Dump(_verboseComponents.Value);
+                return;
+            }
+
             if (_autoDumpSeconds.Value <= 0f) return;
 
             // realtimeSinceStartup, not Time.time: menus and pauses can set
@@ -112,17 +141,33 @@ namespace MoreStraftsRecon
             Log.LogInfo($"Scene '{scene.name}' loaded; auto-dump in {_autoDumpSeconds.Value}s.");
         }
 
-        private void Update()
+        // Unity's per-frame call. May stop happening; see Awake.
+        private void Update() => Tick("Update");
+
+        // The player-loop fallback, which keeps running even if we do not.
+        private void OnBeforeRender() => Tick("onBeforeRender");
+
+        /// <summary>
+        /// The actual per-frame work, driven by whichever source is still alive.
+        /// Both sources normally fire, so the first one each frame wins and the
+        /// other returns immediately - otherwise a single keypress would be
+        /// handled twice.
+        /// </summary>
+        private void Tick(string source)
         {
             try
             {
+                if (_lastTickFrame == Time.frameCount) return;
+                _lastTickFrame = Time.frameCount;
+
                 // Proof of life, logged once. If this line never appears, the
                 // plugin loaded but its Update loop is not running, and no
                 // hotkey could ever work.
                 if (!_loggedHeartbeat)
                 {
                     _loggedHeartbeat = true;
-                    Log.LogInfo("Update loop is running; hotkeys are live.");
+                    _tickSource = source;
+                    Log.LogInfo($"Tick is running via {source}; hotkeys are live.");
                 }
 
                 if (_logKeyPresses.Value) LogAnyFunctionKey();
@@ -150,6 +195,29 @@ namespace MoreStraftsRecon
             {
                 // Never let a recon crash take the game down with it.
                 Log.LogError($"Recon action failed: {e}");
+            }
+        }
+
+        /// <summary>
+        /// Logs whether this component is still alive and enabled. Unity
+        /// overloads == so a destroyed object compares equal to null while the
+        /// C# reference is still perfectly usable, which is exactly how a plugin
+        /// ends up with a working scene callback and a dead Update.
+        /// </summary>
+        private void ReportOwnState(string sceneName)
+        {
+            try
+            {
+                bool destroyed = this == null;
+                string detail = destroyed
+                    ? "DESTROYED (Unity object gone; Update will never run again)"
+                    : $"alive, enabled={enabled}, activeInHierarchy={gameObject.activeInHierarchy}";
+                Log.LogInfo($"[{sceneName}] plugin state: {detail}; tick source: {_tickSource ?? "none yet"}");
+            }
+            catch (Exception e)
+            {
+                Log.LogInfo($"[{sceneName}] plugin state unreadable ({e.GetType().Name}); "
+                            + $"tick source: {_tickSource ?? "none yet"}");
             }
         }
 
