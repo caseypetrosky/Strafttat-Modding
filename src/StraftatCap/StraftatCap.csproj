@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Lobby player cap. Shared settings come from ../../Directory.Build.props.
+
+       No reference to Assembly-CSharp or TextMeshPro: everything game-specific
+       goes through GameBridge via AccessTools, so a game update degrades to a
+       logged warning and vanilla behaviour rather than a plugin that refuses to
+       load - and the whole plugin stays buildable without the game's own
+       assemblies. FishNet is referenced because the transport cap listens to
+       FishNet's server connection-state event. -->
+
+  <PropertyGroup>
+    <AssemblyName>StraftatCap</AssemblyName>
+    <RootNamespace>StraftatCap</RootNamespace>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="FishNet.Runtime">
+      <HintPath>$(ManagedDir)/FishNet.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

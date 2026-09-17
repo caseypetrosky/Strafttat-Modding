@@ -10,8 +10,10 @@ src/
   MoreStraftsRecon/   Read-only recon plugin — dumps hierarchy, types, live values
   LoopbackLab/        Test harness — several game instances on one PC
   SpawnShuffle/       Re-deals spawn points each round so neighbours change
+  StraftatCap/        Raises the lobby player cap above four (GPL-3.0)
 tests/
   SpawnAssignmentTests/  Runs SpawnShuffle's deal logic off the game
+  CapMathTests/          Runs StraftatCap's cap arithmetic off the game
 docs/
   RECON-FINDINGS.md      What the lobby actually looks like, with source references
   SOLO-TESTING.md        Why one-account multi-instance is hard, and the way through
@@ -87,6 +89,13 @@ rounds, a given pair's pairing changes 0.0% of the time. This re-deals players
 into spawn points each round. Enabled by default; its decision logic is
 unit-tested off the game.
 
+**StraftatCap** — raises the lobby cap above four. Vanilla derives the cap from a
+dropdown whose three options are authored in the scene, so widening it is most of
+the job; the catch is that FishySteamworks discards the transport cap at server
+start, so it has to be re-applied afterwards. Press F9 in a lobby for a status
+report that checks the whole chain without needing a second player. Capacity
+only — the lobby UI, round-end and tab screens still assume four.
+
 ## Where things stand
 
 Recon is done: `docs/RECON-FINDINGS.md` answers the four questions that were
@@ -105,6 +114,7 @@ would lean on.
 
 ```bash
 cd tests/SpawnAssignmentTests && dotnet run   # exit 0 = all checks passed
+cd tests/CapMathTests         && dotnet run
 ```
 
 Logic that can be made independent of Unity is kept that way and tested here.
