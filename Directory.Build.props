@@ -24,7 +24,25 @@
   <PropertyGroup>
     <GameDir Condition="'$(GameDir)' == ''">C:/Program Files (x86)/Steam/steamapps/common/STRAFTAT</GameDir>
     <ManagedDir>$(GameDir)/STRAFTAT_Data/Managed</ManagedDir>
-    <PluginsDir>$(GameDir)/BepInEx/plugins</PluginsDir>
+  </PropertyGroup>
+
+  <!-- Where the built DLL gets dropped so the game actually loads it.
+
+       This is NOT always under GameDir. Mod managers keep their own BepInEx
+       install and inject it at launch, so a build that copies into the Steam
+       folder succeeds while the plugin never loads - and nothing anywhere
+       reports an error. Gale is detected here; a manual BepInEx install in the
+       game folder is the fallback.
+
+       Override either part without editing this file:
+         dotnet build src/Foo -p:GaleProfile=Modded
+         dotnet build src/Foo -p:PluginsDir="D:/somewhere/BepInEx/plugins" -->
+  <PropertyGroup>
+    <GaleProfile Condition="'$(GaleProfile)' == ''">Default</GaleProfile>
+    <GaleProfileDir Condition="'$(GaleProfileDir)' == ''">$(APPDATA)/com.kesomannen.gale/straftat/profiles/$(GaleProfile)</GaleProfileDir>
+
+    <PluginsDir Condition="'$(PluginsDir)' == '' And Exists('$(GaleProfileDir)/BepInEx')">$(GaleProfileDir)/BepInEx/plugins</PluginsDir>
+    <PluginsDir Condition="'$(PluginsDir)' == ''">$(GameDir)/BepInEx/plugins</PluginsDir>
   </PropertyGroup>
 
   <!-- BepInEx 5 + HarmonyX. Comes from nuget.bepinex.dev (see NuGet.config),

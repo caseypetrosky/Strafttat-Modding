@@ -37,11 +37,25 @@ NuGet.config          BepInEx feed (BepInEx.Core is not on nuget.org)
    (Steam → right-click STRAFTAT → Manage → Browse local files).
 5. Build:
    ```bash
-   dotnet build src/MoreStraftsRecon      # or src/LoopbackLab
+   dotnet build src/MoreStraftsRecon      # or src/LoopbackLab, src/SpawnShuffle
    ```
 
 Each successful build copies its DLL into `BepInEx/plugins/<Name>/`. Build,
 relaunch, test — that's the whole loop.
+
+**Where the DLL lands** is worked out separately from `GameDir`, because it is
+usually *not* under it: mod managers keep their own BepInEx install and inject
+it at launch, so copying into the Steam folder would succeed while the plugin
+never loads — with no error anywhere. A Gale profile is detected automatically
+(`Default`, override with `-p:GaleProfile=Name`); otherwise the build falls back
+to `GameDir/BepInEx/plugins`. Watch for this line:
+
+```
+--> MoreStraftsRecon.dll copied to .../BepInEx/plugins/MoreStraftsRecon
+```
+
+No such line means nothing was installed — pass the path explicitly with
+`-p:PluginsDir=".../BepInEx/plugins"`.
 
 `Directory.Build.props` holds everything shared: target framework, `GameDir`,
 the BepInEx package reference, common Unity references, and the copy step. A new
