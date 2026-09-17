@@ -43,6 +43,25 @@ and nothing logs a complaint.
 So the cap is re-applied **after** the server reports `Started`, via FishNet's
 own `ServerManager.OnServerConnectionState`. No patching of FishySteamworks.
 
+### There are two max-players dropdowns, and the reachable one is not the field
+
+`SteamLobby.MaxPlayersDropdown` points at `MaxPlayersOutsideLobby`, used on the
+pre-lobby screen. A **second** dropdown named `MaxPlayers` sits inside the lobby
+window, and a `ChangeOtherDropdownValue` component copies the selected index
+between them.
+
+Expanding only the referenced one is not enough, and fails in a confusing
+direction: inside a lobby the outside dropdown is **deactivated**, so the one the
+host can actually reach is the un-expanded one. It still offers 2-4, so the host
+cannot select more than four from inside the lobby, and touching it pushes an
+index of at most 2 back through the sync — dropping the cap to four players with
+nothing logged.
+
+Because the sync copies the raw index, both must offer the same options or the
+same index would mean different counts on each. Every dropdown whose object name
+starts with `MaxPlayers` is expanded, found with `FindObjectsOfTypeAll` so the
+inactive one is included.
+
 ### Every client needs the cap, or it ejects itself
 
 Vanilla's `Update` kicks any player whose index reaches their own `maxPlayers`:
@@ -73,6 +92,7 @@ configured ceiling      : 10
 SteamLobby.maxPlayers   : 10
 players present         : 1
 dropdown options        : 9 (expected 9)
+max-players dropdowns   : MaxPlayers=9, MaxPlayersOutsideLobby=9 (inactive)
 transport clients now   : 9 (expected 9)
 transport agrees with the lobby (9 clients, 10 players).
 --------------------
@@ -109,10 +129,22 @@ the game — see `tests/CapMathTests`.
 
 ## Status
 
-Compile-verified, and the arithmetic is tested. **The in-game behaviour is not
-yet confirmed**, and the transport finding above is reasoned from FishySteamworks
-source rather than observed with real players. F9 is there precisely so the first
-run answers that.
+**Confirmed in game (2026-09-17)** for a solo ten-player lobby:
+
+```
+dropdown options        : 9 (expected 9)
+transport clients now   : 9 (expected 9)
+transport agrees with the lobby (9 clients, 10 players).
+```
+
+and, crucially, the re-application after server start fires:
+
+```
+transport cap -> 9 clients (10 players) [server started]
+```
+
+Still unconfirmed: whether players five and up actually connect. That needs real
+people, and it is the one claim here no amount of solo testing can settle.
 
 ## Licence
 

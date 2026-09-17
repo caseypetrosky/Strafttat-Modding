@@ -122,6 +122,7 @@ namespace StraftatCap
                 Log.Info($"players present         : {players}");
                 Log.Info($"in a steam lobby        : {GameBridge.InLobby()}");
                 Log.Info($"dropdown options        : {options} (expected {expectedOptions})");
+                Log.Info($"max-players dropdowns   : {GameBridge.MaxPlayersDropdownReport()}");
                 Log.Info($"transport clients now   : {TransportCap.CurrentTransportClients()} "
                          + $"(expected {CapMath.TransportClientsFor(lobbyMax)})");
                 Log.Info($"last cap we applied     : {TransportCap.LastApplied}");

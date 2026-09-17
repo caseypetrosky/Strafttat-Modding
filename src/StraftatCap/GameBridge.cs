@@ -158,6 +158,90 @@ namespace StraftatCap
             return true;
         }
 
+        /// <summary>
+        /// Expands every max-players dropdown in the loaded scenes, not just the
+        /// one SteamLobby holds a reference to.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// There are two of them. <c>SteamLobby.MaxPlayersDropdown</c> points at
+        /// <c>MaxPlayersOutsideLobby</c>, used on the pre-lobby screen; a second
+        /// dropdown named <c>MaxPlayers</c> lives inside the lobby window. A
+        /// <c>ChangeOtherDropdownValue</c> component copies the selected index
+        /// from whichever one is touched to the other.
+        /// </para>
+        /// <para>
+        /// Expanding only the referenced one leaves the in-lobby dropdown with
+        /// vanilla's three options, and that is the one actually reachable once
+        /// you are in a lobby - the outside one is deactivated. So the host
+        /// could not choose more than four from inside the lobby, and any use of
+        /// it pushed an index of at most 2 back through the sync, dropping the
+        /// cap to four players with no warning.
+        /// </para>
+        /// <para>
+        /// Because the sync copies the raw index, both dropdowns must also offer
+        /// the same options or the index would mean different things on each.
+        /// </para>
+        /// </remarks>
+        /// <returns>How many dropdowns were expanded.</returns>
+        public static int ExpandAllMaxPlayersDropdowns(int maxPlayers)
+        {
+            var dropdownType = AccessTools.TypeByName("TMPro.TMP_Dropdown");
+            if (dropdownType == null) return 0;
+
+            int expanded = 0;
+
+            // FindObjectsOfTypeAll rather than FindObjectsOfType: inside a lobby
+            // the outside-lobby dropdown is inactive, and the plain call skips
+            // inactive objects.
+            foreach (var candidate in UnityEngine.Resources.FindObjectsOfTypeAll(dropdownType))
+            {
+                var component = candidate as UnityEngine.Component;
+                if (component == null) continue;
+
+                var go = component.gameObject;
+
+                // Assets and prefabs report an invalid scene; only touch live ones.
+                if (!go.scene.IsValid()) continue;
+                if (!go.name.StartsWith("MaxPlayers", StringComparison.Ordinal)) continue;
+
+                if (ExpandDropdown(component, maxPlayers))
+                {
+                    expanded++;
+                    Log.Info($"expanded dropdown '{go.name}' to {CapMath.MinPlayers}-{maxPlayers}.");
+                }
+            }
+
+            return expanded;
+        }
+
+        /// <summary>
+        /// Every max-players dropdown with its option count, for the report.
+        /// Two are expected; seeing one means the in-lobby copy was missed and
+        /// the host would be stuck at vanilla's four from inside a lobby.
+        /// </summary>
+        public static string MaxPlayersDropdownReport()
+        {
+            var dropdownType = AccessTools.TypeByName("TMPro.TMP_Dropdown");
+            if (dropdownType == null) return "TMP_Dropdown type not found";
+
+            var parts = new List<string>();
+            foreach (var candidate in UnityEngine.Resources.FindObjectsOfTypeAll(dropdownType))
+            {
+                var component = candidate as UnityEngine.Component;
+                if (component == null) continue;
+
+                var go = component.gameObject;
+                if (!go.scene.IsValid()) continue;
+                if (!go.name.StartsWith("MaxPlayers", StringComparison.Ordinal)) continue;
+
+                parts.Add($"{go.name}={DropdownOptionCount(component)}"
+                          + (go.activeInHierarchy ? "" : " (inactive)"));
+            }
+
+            return parts.Count == 0 ? "none found" : string.Join(", ", parts);
+        }
+
         /// <summary>How many options the dropdown currently offers.</summary>
         public static int DropdownOptionCount(object dropdown)
         {
