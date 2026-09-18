@@ -11,3 +11,10 @@ libs/
 
 # Built mod packages
 dist/
+
+# Never commit a mod-manager profile. It carries other people's plugin DLLs
+# (some with no licence to redistribute) and BepInEx logs containing Steam IDs
+# and player names.
+straftat DATA FROM GALE*/
+*/BepInEx/LogOutput.log
+LogOutput.log

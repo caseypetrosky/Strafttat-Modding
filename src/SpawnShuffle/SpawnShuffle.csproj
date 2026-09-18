@@ -48,8 +48,8 @@
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(StageDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/packaging/manifest.json;$(MSBuildProjectDirectory)/packaging/icon.png;$(MSBuildProjectDirectory)/packaging/README.md"
           DestinationFolder="$(StageDir)" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)/../../src/StraftatCap/LICENSE"
-          DestinationFiles="$(StageDir)/LICENSE" Condition="Exists('$(MSBuildProjectDirectory)/../../src/StraftatCap/LICENSE')" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/../../LICENSE"
+          DestinationFiles="$(StageDir)/LICENSE" Condition="Exists('$(MSBuildProjectDirectory)/../../LICENSE')" />
 
     <Delete Files="$(ZipPath)" />
     <ZipDirectory SourceDirectory="$(StageDir)" DestinationFile="$(ZipPath)" />

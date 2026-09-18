@@ -3,8 +3,8 @@
 Date: 2026-08-20. Evidence sources:
 
 - `moreStrafts` GitHub repo, `main` @ `a47d690` ("v0.1.0: modular rewrite") — GPL-3.0
-- Installed Gale profile from Strafttat-Modding repo: `moreStrafts.dll` v0.1.0,
-  `MoreStrafts_UISpawnAddon.dll` v2.1.0, BepInEx `LogOutput.log`
+- A local Gale profile (not committed): installed `moreStrafts.dll` v0.1.0,
+  `MoreStrafts_UISpawnAddon.dll` v2.1.0, and BepInEx log output
 - Decompiled `MoreStrafts_UISpawnAddon.dll` (ILSpy, **read-to-learn only** — no
   public source, no license; nothing from it may be copied into distributable code)
 - STRAFTAT-Public mirror @ `main` (sparse checkout of all 257 `.cs` files) —

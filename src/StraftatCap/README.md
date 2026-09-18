@@ -148,7 +148,7 @@ people, and it is the one claim here no amount of solo testing can settle.
 
 ## Licence
 
-GPL-3.0-or-later; see `LICENSE`. This plugin is an independent implementation,
+GPL-3.0-or-later; see the [repository LICENSE](../../LICENSE). This plugin is an independent implementation,
 but it covers the same ground as [moreStrafts](https://github.com/ALBINALSHAIKH/moreStrafts)
 (GPL-3.0) by Nitrogenia, which was studied while writing it — so it is
 distributed under the same licence, with thanks.
