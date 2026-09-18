@@ -9,7 +9,7 @@
   <PropertyGroup>
     <AssemblyName>SpawnShuffle</AssemblyName>
     <RootNamespace>SpawnShuffle</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
   </PropertyGroup>
 
   <!-- Shared helpers, compiled into each plugin rather than referenced,
@@ -17,5 +17,44 @@
   <ItemGroup>
     <Compile Include="../Shared/*.cs" />
   </ItemGroup>
+
+  <!-- Packaging for distribution.
+
+         dotnet build src/SpawnShuffle -p:Package=true
+
+       Produces dist/SpawnShuffle-<version>.zip in Thunderstore layout, which is
+       also what mod managers accept as a local import. The version in
+       packaging/manifest.json must match <Version> above; the check below fails
+       the build rather than shipping a zip whose manifest disagrees with the
+       DLL inside it. -->
+  <Target Name="PackageMod" AfterTargets="Build" Condition="'$(Package)' == 'true'">
+    <PropertyGroup>
+      <StageDir>$(MSBuildProjectDirectory)/../../dist/stage</StageDir>
+      <DistDir>$(MSBuildProjectDirectory)/../../dist</DistDir>
+      <ZipPath>$(DistDir)/$(AssemblyName)-$(Version).zip</ZipPath>
+    </PropertyGroup>
+
+    <ReadLinesFromFile File="$(MSBuildProjectDirectory)/packaging/manifest.json">
+      <Output TaskParameter="Lines" ItemName="ManifestLines" />
+    </ReadLinesFromFile>
+    <PropertyGroup>
+      <ManifestText>@(ManifestLines)</ManifestText>
+    </PropertyGroup>
+    <Error Condition="!$(ManifestText.Contains('&quot;version_number&quot;: &quot;$(Version)&quot;'))"
+           Text="packaging/manifest.json version_number does not match &lt;Version&gt; ($(Version)). Update both before packaging." />
+
+    <RemoveDir Directories="$(StageDir)" />
+    <MakeDir Directories="$(StageDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(StageDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/packaging/manifest.json;$(MSBuildProjectDirectory)/packaging/icon.png;$(MSBuildProjectDirectory)/packaging/README.md"
+          DestinationFolder="$(StageDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/../../src/StraftatCap/LICENSE"
+          DestinationFiles="$(StageDir)/LICENSE" Condition="Exists('$(MSBuildProjectDirectory)/../../src/StraftatCap/LICENSE')" />
+
+    <Delete Files="$(ZipPath)" />
+    <ZipDirectory SourceDirectory="$(StageDir)" DestinationFile="$(ZipPath)" />
+    <RemoveDir Directories="$(StageDir)" />
+    <Message Importance="high" Text="--> packaged $(ZipPath)" />
+  </Target>
 
 </Project>

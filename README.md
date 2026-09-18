@@ -111,6 +111,24 @@ itself. SpawnShuffle is the first gameplay change: self-contained, works with or
 without moreStrafts, and a useful trial run of the patching patterns a fork
 would lean on.
 
+## Shipping a mod to other people
+
+```bash
+dotnet build src/SpawnShuffle -p:Package=true -p:GameDir="<your STRAFTAT path>"
+```
+
+Produces `dist/SpawnShuffle-<version>.zip` in Thunderstore layout, which mod
+managers also accept as a local import — hand that file to a friend and they can
+install it without building anything.
+
+Keep `<Version>` in the csproj and `version_number` in
+`src/SpawnShuffle/packaging/manifest.json` in step; the build fails rather than
+producing a zip whose manifest disagrees with the DLL inside it.
+
+Only SpawnShuffle is packaged. MoreStraftsRecon and LoopbackLab are development
+tools, and StraftatCap stands down whenever moreStrafts is present, so none of
+them belong in someone else's game.
+
 ## Testing
 
 ```bash

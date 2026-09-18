@@ -8,3 +8,6 @@ recon-dumps/
 
 # Local reference DLLs (game assemblies, never committed)
 libs/
+
+# Built mod packages
+dist/

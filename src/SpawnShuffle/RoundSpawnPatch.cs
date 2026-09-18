@@ -64,6 +64,11 @@ namespace SpawnShuffle
             var settings = Plugin.Settings;
             if (settings == null || !settings.Enabled.Value) return Skip("disabled in config");
 
+            // Set the moment before the game's spawn call is made, and never
+            // cleared. See the catch block: once that call has been issued we
+            // must not let vanilla spawn the same player again.
+            bool spawnInvoked = false;
+
             try
             {
                 if (!GameAccess.Usable) return Skip($"game members unresolved ({GameAccess.MissingMembers()})");
@@ -103,6 +108,11 @@ namespace SpawnShuffle
                 }
 
                 var rotation = Quaternion.Euler(0f, point.eulerAngles.y, 0f);
+
+                // Flag first, call second. If the call throws part-way we have
+                // no way to know whether a player object was created, and
+                // assuming it was is the safer guess.
+                spawnInvoked = true;
                 GameAccess.SpawnAt(__instance, suitIndex, cigIndex, position, rotation);
 
                 AppliedCount++;
@@ -119,9 +129,22 @@ namespace SpawnShuffle
                 if (!_loggedFailure)
                 {
                     _loggedFailure = true;
-                    Log.Error($"spawn assignment failed, falling back to vanilla: {e}");
+                    Log.Error($"spawn assignment failed: {e}");
                 }
-                return Skip($"threw: {e.GetType().Name}");
+
+                if (spawnInvoked)
+                {
+                    // The game's own SpawnPlayer has already been called for this
+                    // player. Handing back to vanilla now would call it a second
+                    // time, and two player objects in a networked match is a far
+                    // worse outcome than one badly placed one.
+                    LastOutcome = $"threw after spawning ({e.GetType().Name}); "
+                                  + "suppressed vanilla to avoid a double spawn";
+                    return false;
+                }
+
+                // Nothing was spawned, so vanilla can place this player normally.
+                return Skip($"threw before spawning: {e.GetType().Name}");
             }
         }
 
