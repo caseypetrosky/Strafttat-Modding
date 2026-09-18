@@ -9,7 +9,7 @@
   <PropertyGroup>
     <AssemblyName>SpawnShuffle</AssemblyName>
     <RootNamespace>SpawnShuffle</RootNamespace>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
   </PropertyGroup>
 
   <!-- Shared helpers, compiled into each plugin rather than referenced,
@@ -46,7 +46,7 @@
     <RemoveDir Directories="$(StageDir)" />
     <MakeDir Directories="$(StageDir)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(StageDir)" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)/packaging/manifest.json;$(MSBuildProjectDirectory)/packaging/icon.png;$(MSBuildProjectDirectory)/packaging/README.md"
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/packaging/manifest.json;$(MSBuildProjectDirectory)/packaging/icon.png;$(MSBuildProjectDirectory)/packaging/README.md;$(MSBuildProjectDirectory)/packaging/CHANGELOG.md"
           DestinationFolder="$(StageDir)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)/../../LICENSE"
           DestinationFiles="$(StageDir)/LICENSE" Condition="Exists('$(MSBuildProjectDirectory)/../../LICENSE')" />

@@ -130,7 +130,7 @@ Press F10 across a few rounds and the assignments should move.
 
 ## Config
 
-`BepInEx/config/com.caseypetrosky.spawnshuffle.cfg`
+`BepInEx/config/spawnshuffle.cfg`
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -205,6 +205,17 @@ plugin stood down on every spawn — compiling cleanly and logging a plausible
 warning while never actually re-dealing anything. Singletons are now read
 through `StaticAccess`, which accepts either form, and a regression test covers
 it.
+
+## Identity in the shipped package
+
+The published package deliberately carries no personal identifiers. The plugin
+GUID is `spawnshuffle` (not a name-derived one), `website_url` in
+`packaging/manifest.json` is empty, and the player-facing readme links nowhere.
+
+That matters because Thunderstore turns `website_url` into a prominent link on
+the package page, and a GitHub profile link exposes whatever real name that
+account carries. If you ever want the package to point somewhere, use a URL you
+are happy to have read by strangers.
 
 ## Status
 

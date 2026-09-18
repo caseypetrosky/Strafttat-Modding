@@ -1,7 +1,7 @@
 {
   "name": "SpawnShuffle",
-  "version_number": "0.2.0",
-  "website_url": "https://github.com/caseypetrosky/Strafttat-Modding",
+  "version_number": "0.3.0",
+  "website_url": "",
   "description": "Re-deals spawn points every round so you stop starting next to the same player all match.",
   "dependencies": [
     "BepInEx-BepInExPack-5.4.2100"

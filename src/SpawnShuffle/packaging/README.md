@@ -1,90 +1,64 @@
 # Spawn Shuffle
 
-Stops you spawning next to the same person every round.
+Stops you spawning next to the same player every round.
 
-## The problem
+## Why
 
-STRAFTAT picks your spawn with `(round + playerId) % spawnPointCount`. Everyone
-moves up one spawn point per round, **together**, so the whole arrangement just
-rotates — the gap between you and any other player never changes. If someone
-starts one spawn over from you in round 1, they are one spawn over in round 50.
+STRAFTAT picks your spawn with `(round + playerId) % spawnPoints`. Everyone
+moves up one spawn point per round **together**, so the arrangement only
+rotates — the gap between you and anyone else never changes. Whoever starts one
+spawn over from you in round 1 is still one spawn over in round 50.
 
-Measured over 300 rounds on a four-point map, how often a given pair of players
-changes between sharing and not sharing a spawn point:
+This re-deals everyone into spawn points each round, and shuffles the spawn
+points too, so both who you start near and which part of the map gets used
+change every round.
 
-| Players | Vanilla | Spawn Shuffle |
-|---|---|---|
-| 5  | 0.0% | 17.8% |
-| 8  | 0.0% | 24.2% |
-| 10 | 0.0% | 28.9% |
+Four players or fewer still get a spawn point each, same as vanilla. Above that
+people share — maps only have four — but the load stays even and no point is
+left empty.
 
-Vanilla is not "rarely". It is *never*.
+## Install
 
-## What it does
+Install through a mod manager, or drop `SpawnShuffle.dll` into
+`BepInEx/plugins/`.
 
-Every round, players are dealt into spawn points through a fresh shuffle, and
-the spawn points themselves are shuffled too. So who you start near, and which
-part of the map gets used, both change round to round.
+**Only the host needs it.** Spawns are decided host-side, so mixed lobbies are
+fine — anyone without it is unaffected.
 
-With four players or fewer everyone still gets their own spawn point, exactly
-like vanilla — only the arrangement varies. Above four, players have to share
-(maps only ship four spawn points), but every point stays occupied and the load
-stays even: never three crowded onto one spawn while another sits empty.
+## Requirements
 
-## Installing
+- BepInEx 5
 
-Drop `SpawnShuffle.dll` into `BepInEx/plugins/`, or install the zip through a
-mod manager.
+## Works with
 
-**Only the host actually needs it.** Spawn placement runs inside a server RPC,
-so the host decides where everyone starts and the result replicates normally.
-
-That means mixed lobbies are fine — players without the mod are unaffected, and
-there is nothing to desync. In practice everyone should install it anyway, since
-any of you might end up hosting.
-
-## Works alongside
-
-Nothing else is required, but it fits in with the usual 5-10 player setup:
-
-- **moreStrafts** — no interaction; this patches vanilla spawning directly.
-- **MoreStrafts_UISpawnAddon** — detected automatically. That mod already nudges
-  every spawn apart, so this one stops doing its own nudging and just decides
-  who goes where. No configuration needed, and `ClusterRadius` below is unused
-  while it is installed.
+- **moreStrafts** — no conflict.
+- **MoreStrafts_UISpawnAddon** — detected automatically. It already spreads
+  spawns apart, so this mod stops doing its own spreading and just decides who
+  goes where. Nothing to configure.
 
 ## Settings
 
-`BepInEx/config/com.caseypetrosky.spawnshuffle.cfg`
+`BepInEx/config/spawnshuffle.cfg`
 
-| Setting | Default | What it does |
+| Setting | Default | |
 |---|---|---|
 | `Enabled` | `true` | Off restores vanilla spawns |
 | `MinimumPlayers` | `3` | Smaller matches are left alone |
-| `OverrideTeamModes` | `false` | Team modes keep the game's own 2v2 placement |
+| `OverrideTeamModes` | `false` | Team modes keep the game's own placement |
 | `ClusterRadius` | `0.6` | Metres apart when players share a point |
-| `SharedPointOffsets` | `Auto` | Leave separation to UISpawnAddon when installed |
-| `Salt` | `0` | Change for a different sequence of shuffles |
+| `SharedPointOffsets` | `Auto` | Defers to UISpawnAddon when installed |
+| `Salt` | `0` | Change for a different sequence |
 
-## Is it working?
+## Check it's working
 
-Press **F10** in a match. The line that matters:
+Press **F10** on the host during a match:
 
 ```
 spawns re-dealt so far  : 12
 ```
 
-If that stays at `0`, it is not doing anything, and the next line says why —
-too few players, team mode, and so on. Check it **on the host**, since that is
-where the work happens.
+If that stays at `0`, the next line says why — usually too few players or a
+team mode.
 
-Two things that legitimately show `0`: fewer than three players, and team modes
-(left alone by default, so the game's own 2v2 placement is preserved).
-
-## If something goes wrong
-
-Every failure falls back to vanilla spawning rather than breaking your match.
-If you hit a problem, `BepInEx/LogOutput.log` plus the F10 report is everything
-needed to diagnose it.
-
-Bugs: https://github.com/caseypetrosky/Strafttat-Modding/issues
+Anything that goes wrong falls back to normal spawning rather than breaking
+your match.

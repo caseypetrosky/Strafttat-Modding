@@ -30,7 +30,7 @@ namespace SpawnShuffle
     [BepInDependency(StraftatModding.ModPresence.UiSpawnAddonGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
-        public const string Guid = "com.caseypetrosky.spawnshuffle";
+        public const string Guid = "spawnshuffle";
         public const string Name = "Spawn Shuffle";
         public const string Version = "0.1.0";
 
