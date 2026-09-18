@@ -6,7 +6,7 @@ using HarmonyLib;
 using StraftatModding;
 using UnityEngine;
 
-namespace SpawnShuffle
+namespace StraftShuffle
 {
     /// <summary>
     /// Every reach into the game's own types lives here, so the rest of the

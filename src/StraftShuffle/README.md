@@ -1,4 +1,4 @@
-# Spawn Shuffle
+# Straft Shuffle
 
 Re-deals spawn points every round, so you stop starting next to the same players
 all match.
@@ -23,7 +23,7 @@ because the formula is fixed, the *same pairs* collide every single round.
 Measured over 300 rounds, how often a given pair of players changes from
 sharing/not-sharing a spawn point:
 
-| Players | Vanilla | Spawn Shuffle |
+| Players | Vanilla | Straft Shuffle |
 |---|---|---|
 | 5  | 0.0% | 17.8% |
 | 8  | 0.0% | 24.2% |
@@ -36,7 +36,7 @@ whether the *arrangement* changes — measured as how many distinct relative
 positions a given pair ever occupies over 400 rounds (3 is the most possible
 when nobody shares):
 
-| Players (4 spawn points) | Vanilla | Spawn Shuffle |
+| Players (4 spawn points) | Vanilla | Straft Shuffle |
 |---|---|---|
 | 2  | 1.0 | 3.0 |
 | 3  | 1.0 | 3.0 |
@@ -75,7 +75,7 @@ round 2:  C,G          D            A,E          B,F
 round 3:  B,F          C,G          D            A,E
 ```
 
-Spawn Shuffle — the pairings and the loner change every round:
+Straft Shuffle — the pairings and the loner change every round:
 
 ```
         point 0      point 1      point 2      point 3
@@ -130,7 +130,7 @@ Press F10 across a few rounds and the assignments should move.
 
 ## Config
 
-`BepInEx/config/spawnshuffle.cfg`
+`BepInEx/config/straftshuffle.cfg`
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -209,7 +209,7 @@ it.
 ## Identity in the shipped package
 
 The published package deliberately carries no personal identifiers. The plugin
-GUID is `spawnshuffle` (not a name-derived one), `website_url` in
+GUID is `straftshuffle` (not a name-derived one), `website_url` in
 `packaging/manifest.json` is empty, and the player-facing readme links nowhere.
 
 That matters because Thunderstore turns `website_url` into a prominent link on
@@ -220,7 +220,7 @@ are happy to have read by strangers.
 ## Status
 
 The assignment logic is **unit-tested off the game** (see
-`docs/SPAWN-SHUFFLE-TESTS.md`): the deal is verified to be a bijection, stable
+`docs/STRAFT-SHUFFLE-TESTS.md`): the deal is verified to be a bijection, stable
 across repeated calls, independent of player-list order, correct in its occupant
 counts, and safe on degenerate input. The measured table above comes from those
 tests.

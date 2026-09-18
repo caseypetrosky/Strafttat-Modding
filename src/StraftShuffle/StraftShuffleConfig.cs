@@ -1,7 +1,7 @@
 using BepInEx.Configuration;
 using UnityEngine;
 
-namespace SpawnShuffle
+namespace StraftShuffle
 {
     /// <summary>How to separate players who share a spawn point.</summary>
     internal enum OffsetBehaviour
@@ -15,7 +15,7 @@ namespace SpawnShuffle
     }
 
     /// <summary>All tunables, bound once at startup.</summary>
-    internal sealed class SpawnShuffleConfig
+    internal sealed class StraftShuffleConfig
     {
         public readonly ConfigEntry<bool> Enabled;
         public readonly ConfigEntry<int> MinimumPlayers;
@@ -25,7 +25,7 @@ namespace SpawnShuffle
         public readonly ConfigEntry<int> Salt;
         public readonly ConfigEntry<KeyboardShortcut> ReportKey;
 
-        public SpawnShuffleConfig(ConfigFile config)
+        public StraftShuffleConfig(ConfigFile config)
         {
             Enabled = config.Bind(
                 "Shuffle", "Enabled", true,

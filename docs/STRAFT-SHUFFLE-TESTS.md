@@ -1,11 +1,11 @@
-# Spawn Shuffle — test notes
+# Straft Shuffle — test notes
 
 ```bash
 cd tests/SpawnAssignmentTests && dotnet run
 ```
 
 Exit code 0 means everything passed. No packages, no Unity, no game required:
-`SpawnShuffle.SpawnAssignment` is a pure function, so it can be exercised
+`StraftShuffle.SpawnAssignment` is a pure function, so it can be exercised
 directly as a console app.
 
 ## What is checked, and why each matters
@@ -34,7 +34,7 @@ another.
 **4. Neighbours actually change.** The point of the mod. Over 300 rounds, count
 how often a given pair flips between sharing and not sharing a spawn point:
 
-| Players | Vanilla `(round + id) % 4` | Spawn Shuffle |
+| Players | Vanilla `(round + id) % 4` | Straft Shuffle |
 |---|---|---|
 | 5  | 0.0% | 17.8% |
 | 8  | 0.0% | 24.2% |
@@ -50,7 +50,7 @@ assumed.
 shares a point, so "who shares" measures nothing. The metric there is how many
 distinct relative positions a pair ever occupies (max 3 when nobody shares):
 
-| Players | Vanilla | Spawn Shuffle |
+| Players | Vanilla | Straft Shuffle |
 |---|---|---|
 | 2 | 1.0 | 3.0 |
 | 3 | 1.0 | 3.0 |

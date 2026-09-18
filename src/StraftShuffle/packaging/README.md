@@ -1,4 +1,4 @@
-# Spawn Shuffle
+# Straft Shuffle
 
 Stops you spawning next to the same player every round.
 
@@ -19,7 +19,7 @@ left empty.
 
 ## Install
 
-Install through a mod manager, or drop `SpawnShuffle.dll` into
+Install through a mod manager, or drop `StraftShuffle.dll` into
 `BepInEx/plugins/`.
 
 **Only the host needs it.** Spawns are decided host-side, so mixed lobbies are
@@ -38,7 +38,7 @@ fine — anyone without it is unaffected.
 
 ## Settings
 
-`BepInEx/config/spawnshuffle.cfg`
+`BepInEx/config/straftshuffle.cfg`
 
 | Setting | Default | |
 |---|---|---|

@@ -1,5 +1,5 @@
 {
-  "name": "SpawnShuffle",
+  "name": "StraftShuffle",
   "version_number": "0.3.0",
   "website_url": "",
   "description": "Re-deals spawn points every round so you stop starting next to the same player all match.",

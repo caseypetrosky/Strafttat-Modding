@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System;
 using HarmonyLib;
 
-namespace SpawnShuffle
+namespace StraftShuffle
 {
     /// <summary>
     /// Re-deals spawn points every round so a match stops replaying the same
@@ -30,15 +30,15 @@ namespace SpawnShuffle
     [BepInDependency(StraftatModding.ModPresence.UiSpawnAddonGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
-        public const string Guid = "spawnshuffle";
-        public const string Name = "Spawn Shuffle";
+        public const string Guid = "straftshuffle";
+        public const string Name = "Straft Shuffle";
         public const string Version = "0.1.0";
 
         /// <summary>
         /// Our settings. Not named "Config" — BaseUnityPlugin already has a
         /// Config property, and shadowing it reads badly at call sites.
         /// </summary>
-        internal static SpawnShuffleConfig Settings { get; private set; }
+        internal static StraftShuffleConfig Settings { get; private set; }
 
         /// <summary>
         /// Whether we separate players who share a spawn point, or leave it to
@@ -58,7 +58,7 @@ namespace SpawnShuffle
         private void Awake()
         {
             Log.Init(Logger);
-            Settings = new SpawnShuffleConfig(Config);
+            Settings = new StraftShuffleConfig(Config);
 
             ShouldOffsetSharedPoints = ResolveOffsetBehaviour();
 

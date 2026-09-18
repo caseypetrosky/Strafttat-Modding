@@ -7,8 +7,8 @@
        warning and vanilla spawns rather than a plugin that won't load. -->
 
   <PropertyGroup>
-    <AssemblyName>SpawnShuffle</AssemblyName>
-    <RootNamespace>SpawnShuffle</RootNamespace>
+    <AssemblyName>StraftShuffle</AssemblyName>
+    <RootNamespace>StraftShuffle</RootNamespace>
     <Version>0.3.0</Version>
   </PropertyGroup>
 
@@ -20,9 +20,9 @@
 
   <!-- Packaging for distribution.
 
-         dotnet build src/SpawnShuffle -p:Package=true
+         dotnet build src/StraftShuffle -p:Package=true
 
-       Produces dist/SpawnShuffle-<version>.zip in Thunderstore layout, which is
+       Produces dist/StraftShuffle-<version>.zip in Thunderstore layout, which is
        also what mod managers accept as a local import. The version in
        packaging/manifest.json must match <Version> above; the check below fails
        the build rather than shipping a zip whose manifest disagrees with the

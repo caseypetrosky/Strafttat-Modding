@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Runs SpawnShuffle's assignment logic off the game.
+  <!-- Runs StraftShuffle's assignment logic off the game.
        This is possible because SpawnAssignment is pure: no Unity types, no game
        state, no ambient randomness. `dotnet run` from this folder; exit code 0
        means every check passed.
@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../../src/SpawnShuffle/SpawnAssignment.cs" />
+    <Compile Include="../../src/StraftShuffle/SpawnAssignment.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 

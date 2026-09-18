@@ -1,6 +1,6 @@
 using BepInEx.Logging;
 
-namespace SpawnShuffle
+namespace StraftShuffle
 {
     /// <summary>Shared logger, safe to call before Init (messages are dropped).</summary>
     internal static class Log

@@ -2,7 +2,7 @@ using System;
 using HarmonyLib;
 using UnityEngine;
 
-namespace SpawnShuffle
+namespace StraftShuffle
 {
     /// <summary>
     /// Replaces the game's choice of spawn point at the start of each round.

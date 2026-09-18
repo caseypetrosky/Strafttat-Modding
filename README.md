@@ -3,7 +3,7 @@
 Mods and tooling for [STRAFTAT](https://store.steampowered.com/app/2386720/STRAFTAT/)
 (Unity 2021.3, FishNet 3.10.8, BepInEx 5).
 
-## Spawn Shuffle
+## Straft Shuffle
 
 The released mod. It stops you spawning next to the same player every round.
 
@@ -15,7 +15,7 @@ starts one spawn over from you in round 1 is one spawn over in round 50.
 Measured over 300 rounds on a four-point map, how often a given pair changes
 between sharing and not sharing a spawn point:
 
-| Players | Vanilla | Spawn Shuffle |
+| Players | Vanilla | Straft Shuffle |
 |---|---|---|
 | 5  | 0.0% | 17.8% |
 | 8  | 0.0% | 24.2% |
@@ -27,14 +27,14 @@ their own point each, exactly like vanilla; above that everyone shares evenly,
 with no point left empty.
 
 Only the host needs it — spawn placement runs in a server RPC — so mixed lobbies
-are fine. Details and settings: [`src/SpawnShuffle/`](src/SpawnShuffle/README.md).
+are fine. Details and settings: [`src/StraftShuffle/`](src/StraftShuffle/README.md).
 
 It works alongside **moreStrafts** and **MoreStrafts_UISpawnAddon**, detecting
 the latter and leaving spawn separation to it rather than doubling up.
 
 ## Also here
 
-Development tools, kept because the findings behind Spawn Shuffle came out of
+Development tools, kept because the findings behind Straft Shuffle came out of
 them. None are needed to play.
 
 | | |
@@ -53,7 +53,7 @@ Written up while figuring this out, with `file:line` references into the
   individually named fields.
 - [Multi-instance testing](docs/SOLO-TESTING.md) — why two clients on one Steam
   account cannot connect, and the transport that gets around it.
-- [Spawn tests](docs/SPAWN-SHUFFLE-TESTS.md) — what the numbers above are
+- [Spawn tests](docs/STRAFT-SHUFFLE-TESTS.md) — what the numbers above are
   measuring.
 
 ## Building
@@ -63,7 +63,7 @@ install (plugins reference the game's own assemblies, which are not
 redistributable and so are not in this repository).
 
 ```bash
-dotnet build src/SpawnShuffle -p:GameDir="C:/Path/To/STRAFTAT"
+dotnet build src/StraftShuffle -p:GameDir="C:/Path/To/STRAFTAT"
 ```
 
 The DLL is copied straight into `BepInEx/plugins/`. A Gale profile is detected
@@ -71,7 +71,7 @@ automatically; otherwise it falls back to the game folder. To produce a
 distributable zip:
 
 ```bash
-dotnet build src/SpawnShuffle -p:Package=true -p:GameDir="C:/Path/To/STRAFTAT"
+dotnet build src/StraftShuffle -p:Package=true -p:GameDir="C:/Path/To/STRAFTAT"
 ```
 
 Logic that can be separated from Unity is, and is tested without the game:

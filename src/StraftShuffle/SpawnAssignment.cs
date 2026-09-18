@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SpawnShuffle
+namespace StraftShuffle
 {
     /// <summary>
     /// Which spawn point a player gets, and where around it they stand.
