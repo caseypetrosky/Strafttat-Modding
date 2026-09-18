@@ -36,8 +36,12 @@ stays even: never three crowded onto one spawn while another sits empty.
 Drop `SpawnShuffle.dll` into `BepInEx/plugins/`, or install the zip through a
 mod manager.
 
-**Everyone in the lobby should have it.** Spawning is decided by the host, so a
-host without it means nobody gets shuffled spawns.
+**Only the host actually needs it.** Spawn placement runs inside a server RPC,
+so the host decides where everyone starts and the result replicates normally.
+
+That means mixed lobbies are fine — players without the mod are unaffected, and
+there is nothing to desync. In practice everyone should install it anyway, since
+any of you might end up hosting.
 
 ## Works alongside
 
@@ -46,7 +50,8 @@ Nothing else is required, but it fits in with the usual 5-10 player setup:
 - **moreStrafts** — no interaction; this patches vanilla spawning directly.
 - **MoreStrafts_UISpawnAddon** — detected automatically. That mod already nudges
   every spawn apart, so this one stops doing its own nudging and just decides
-  who goes where. No configuration needed.
+  who goes where. No configuration needed, and `ClusterRadius` below is unused
+  while it is installed.
 
 ## Settings
 
@@ -70,7 +75,11 @@ spawns re-dealt so far  : 12
 ```
 
 If that stays at `0`, it is not doing anything, and the next line says why —
-too few players, team mode, and so on.
+too few players, team mode, and so on. Check it **on the host**, since that is
+where the work happens.
+
+Two things that legitimately show `0`: fewer than three players, and team modes
+(left alone by default, so the game's own 2v2 placement is preserved).
 
 ## If something goes wrong
 
