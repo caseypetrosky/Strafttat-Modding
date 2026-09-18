@@ -90,6 +90,44 @@ players and one with a single player, never four crowded onto one spawn while
 another sits empty. With 4 players or fewer everyone gets their own point, as
 vanilla does; only the arrangement changes.
 
+## Checking it is actually running
+
+Press **F10** in a lobby. Unlike the shuffle itself, the report works with one
+player:
+
+```
+---- spawn shuffle report ----
+enabled                 : True
+detected mods           : moreStrafts=0.1.0, UISpawnAddon=2.1.0
+we offset shared points : False (left to UISpawnAddon)
+spawns re-dealt so far  : 12
+last spawn outcome      : round 3: player 0 -> point 2 (alone)
+round index             : 3
+players present         : 1 [0]
+minimum to act          : 3
+spawn points on this map: 4
+dry run for 3 players (round 3):
+   player 0 -> point 1 (alone)
+   player 1 -> point 3 (alone)
+   player 2 -> point 0 (alone)
+------------------------------
+```
+
+Two lines carry the weight. **`spawns re-dealt so far`** is the honest one — if
+it stays at 0 after several rounds, the plugin is not doing anything, whatever
+else the log says. **`last spawn outcome`** then says why, naming the reason
+rather than leaving you to guess:
+
+```
+last spawn outcome      : 1 player(s), minimum is 3
+last spawn outcome      : game members unresolved (ScoreManager.Instance)
+last spawn outcome      : team mode, and OverrideTeamModes is off
+```
+
+The dry run deals a hypothetical roster against the real spawn points and the
+real round number, so you can see the shuffle working without gathering a group.
+Press F10 across a few rounds and the assignments should move.
+
 ## Config
 
 `BepInEx/config/com.caseypetrosky.spawnshuffle.cfg`

@@ -1,4 +1,7 @@
 using BepInEx;
+using UnityEngine;
+using System.Collections.Generic;
+using System;
 using HarmonyLib;
 
 namespace SpawnShuffle
@@ -50,6 +53,8 @@ namespace SpawnShuffle
         /// </remarks>
         internal static bool ShouldOffsetSharedPoints { get; private set; } = true;
 
+        private int _lastTickFrame = -1;
+
         private void Awake()
         {
             Log.Init(Logger);
@@ -60,6 +65,11 @@ namespace SpawnShuffle
             // Patch unconditionally; the prefix decides what to do. That keeps
             // toggling the config independent of whether patching succeeded.
             new Harmony(Guid).PatchAll(typeof(RoundSpawnPatch));
+
+            // Update alone is not dependable here - the game destroys plugin
+            // components, so Unity stops calling it. onBeforeRender is a static
+            // player-loop event and keeps running regardless.
+            Application.onBeforeRender += OnBeforeRender;
 
             Log.Info($"detected mods: {StraftatModding.ModPresence.Summary()}");
             Log.Info(ShouldOffsetSharedPoints
@@ -79,6 +89,104 @@ namespace SpawnShuffle
                 case OffsetBehaviour.Always: return true;
                 case OffsetBehaviour.Never: return false;
                 default: return !StraftatModding.ModPresence.UiSpawnAddon;
+            }
+        }
+
+
+        private void Update() => Tick();
+        private void OnBeforeRender() => Tick();
+
+        private void Tick()
+        {
+            try
+            {
+                if (_lastTickFrame == Time.frameCount) return;
+                _lastTickFrame = Time.frameCount;
+
+                if (Settings == null) return;
+                if (Settings.ReportKey.Value.IsDown() || Input.GetKeyDown(KeyCode.F10)) Report();
+            }
+            catch (Exception e)
+            {
+                Log.Error($"tick failed: {e}");
+            }
+        }
+
+        /// <summary>
+        /// Logs what this plugin is doing and what it would do right now.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately useful in a one-player lobby, where the shuffle itself
+        /// does not run: the dry run below deals a hypothetical roster against
+        /// the real spawn points and the real round number, so the wiring can be
+        /// checked without gathering a group.
+        /// </remarks>
+        private static void Report()
+        {
+            try
+            {
+                Log.Info("---- spawn shuffle report ----");
+                Log.Info($"enabled                 : {Settings.Enabled.Value}");
+                Log.Info($"detected mods           : {StraftatModding.ModPresence.Summary()}");
+                Log.Info($"we offset shared points : {ShouldOffsetSharedPoints}"
+                         + (ShouldOffsetSharedPoints ? "" : " (left to UISpawnAddon)"));
+                Log.Info($"spawns re-dealt so far  : {RoundSpawnPatch.AppliedCount}");
+                Log.Info($"last spawn outcome      : {RoundSpawnPatch.LastOutcome}");
+
+                if (!GameAccess.Usable)
+                {
+                    Log.Warn($"NOT running. Could not find: {GameAccess.MissingMembers()}");
+                    Log.Info("------------------------------");
+                    return;
+                }
+
+                var players = GameAccess.ConnectedPlayerIds();
+                int round = GameAccess.RoundIndex();
+                Log.Info($"round index             : {round}");
+                Log.Info($"players present         : {players.Count} [{string.Join(",", players)}]");
+                Log.Info($"minimum to act          : {Settings.MinimumPlayers.Value}");
+
+                // Spawn points come from a live PlayerManager; without one there
+                // is nothing to deal against and a dry run would be fiction.
+                var manager = GameAccess.AnyPlayerManager();
+                if (manager == null)
+                {
+                    Log.Info("spawn points            : no PlayerManager yet (start a match)");
+                    Log.Info("------------------------------");
+                    return;
+                }
+
+                GameAccess.RefreshSpawnPoints(manager);
+                var points = GameAccess.SpawnPoints(manager);
+                Log.Info($"spawn points on this map: {points.Count}");
+
+                if (points.Count == 0)
+                {
+                    Log.Info("------------------------------");
+                    return;
+                }
+
+                // Dry run. Uses the real round and real point count, so the deal
+                // shown is the one that would happen with this many players.
+                int sample = Math.Max(players.Count, Settings.MinimumPlayers.Value);
+                var roster = new List<int>();
+                for (int i = 0; i < sample; i++) roster.Add(i);
+
+                Log.Info($"dry run for {sample} players (round {round}):");
+                for (int i = 0; i < sample; i++)
+                {
+                    var slot = SpawnAssignment.Assign(i, roster, points.Count, round, Settings.Salt.Value);
+                    Log.Info($"   player {i} -> point {slot.SpawnPointIndex}"
+                             + (slot.Occupants > 1
+                                 ? $" (shared by {slot.Occupants}, ring {slot.Ring})"
+                                 : " (alone)"));
+                }
+
+                Log.Info("------------------------------");
+            }
+            catch (Exception e)
+            {
+                Log.Error($"report failed: {e}");
             }
         }
 

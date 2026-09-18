@@ -87,8 +87,8 @@ See its README — especially the note on why it needs a restart.
 `spawnPoints[(round + playerId) % count]`, so the whole arrangement rotates in
 lockstep and the gap between any two players never changes: measured over 300
 rounds, a given pair's pairing changes 0.0% of the time. This re-deals players
-into spawn points each round. Enabled by default; its decision logic is
-unit-tested off the game.
+into spawn points each round. Press F10 for a status report that works with one
+player. Enabled by default; its decision logic is unit-tested off the game.
 
 **StraftatCap** — raises the lobby cap above four. Vanilla derives the cap from a
 dropdown whose three options are authored in the scene, so widening it is most of

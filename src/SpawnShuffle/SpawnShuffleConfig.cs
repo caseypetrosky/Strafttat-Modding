@@ -1,4 +1,5 @@
 using BepInEx.Configuration;
+using UnityEngine;
 
 namespace SpawnShuffle
 {
@@ -22,6 +23,7 @@ namespace SpawnShuffle
         public readonly ConfigEntry<float> ClusterRadius;
         public readonly ConfigEntry<OffsetBehaviour> OffsetMode;
         public readonly ConfigEntry<int> Salt;
+        public readonly ConfigEntry<KeyboardShortcut> ReportKey;
 
         public SpawnShuffleConfig(ConfigFile config)
         {
@@ -63,6 +65,11 @@ namespace SpawnShuffle
                     + "Too small and players spawn inside each other; too large and they "
                     + "land in walls.",
                     new AcceptableValueRange<float>(0f, 3f)));
+
+            ReportKey = config.Bind(
+                "Hotkeys", "Report", new KeyboardShortcut(KeyCode.F10),
+                "Log what this plugin is doing, including the deal it would make right now. "
+                + "Works in a one-player lobby, where the shuffle itself does not run.");
 
             Salt = config.Bind(
                 "Shuffle", "Salt", 0,

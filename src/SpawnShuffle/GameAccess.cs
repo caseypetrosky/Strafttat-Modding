@@ -86,6 +86,9 @@ namespace SpawnShuffle
             }
         }
 
+        /// <summary>Which members could not be found, for the status report.</summary>
+        public static string MissingMembers() { if (!_resolved) Resolve(); return Missing(); }
+
         private static string Missing()
         {
             var missing = new List<string>();
@@ -125,6 +128,20 @@ namespace SpawnShuffle
         {
             var client = _clientScript.GetValue(playerManager);
             return client == null ? -1 : (int)_playerId.GetValue(client);
+        }
+
+        /// <summary>
+        /// Any live PlayerManager, for the status report's dry run.
+        /// </summary>
+        /// <remarks>
+        /// The patch normally receives one as __instance. The report has no
+        /// such instance, but the spawn point list is per-map rather than
+        /// per-player, so borrowing any of them gives the right answer.
+        /// </remarks>
+        public static object AnyPlayerManager()
+        {
+            var type = AccessTools.TypeByName("PlayerManager");
+            return type == null ? null : UnityEngine.Object.FindObjectOfType(type);
         }
 
         /// <summary>Ids of everyone currently in the match.</summary>

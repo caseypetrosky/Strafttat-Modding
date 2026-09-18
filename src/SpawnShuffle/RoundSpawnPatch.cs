@@ -39,35 +39,57 @@ namespace SpawnShuffle
             AccessTools.Method(AccessTools.TypeByName("PlayerManager"), "SpawnPlayer",
                 new[] { typeof(int), typeof(int) });
 
+        /// <summary>How many spawns this plugin has actually placed.</summary>
+        internal static int AppliedCount { get; private set; }
+
+        /// <summary>
+        /// Why the last spawn was or was not re-dealt.
+        /// </summary>
+        /// <remarks>
+        /// Every bail-out below hands back to vanilla, which is correct but
+        /// indistinguishable from the plugin not running at all - the failure
+        /// mode that hid a broken singleton lookup for an entire release. The
+        /// reason is recorded so the status report can say which it was.
+        /// </remarks>
+        internal static string LastOutcome { get; private set; } = "no spawn seen yet";
+
+        private static bool Skip(string reason)
+        {
+            LastOutcome = reason;
+            return true;   // let vanilla place the player
+        }
+
         private static bool Prefix(object __instance, int suitIndex, int cigIndex)
         {
             var settings = Plugin.Settings;
-            if (settings == null || !settings.Enabled.Value) return true;
+            if (settings == null || !settings.Enabled.Value) return Skip("disabled in config");
 
             try
             {
-                if (!GameAccess.Usable) return true;
+                if (!GameAccess.Usable) return Skip($"game members unresolved ({GameAccess.MissingMembers()})");
 
                 var players = GameAccess.ConnectedPlayerIds();
-                if (players.Count < settings.MinimumPlayers.Value) return true;
+                if (players.Count < settings.MinimumPlayers.Value)
+                    return Skip($"{players.Count} player(s), minimum is {settings.MinimumPlayers.Value}");
 
-                if (!settings.OverrideTeamModes.Value && TeamModeActive()) return true;
+                if (!settings.OverrideTeamModes.Value && TeamModeActive())
+                    return Skip("team mode, and OverrideTeamModes is off");
 
                 int playerId = GameAccess.PlayerIdOf(__instance);
-                if (playerId < 0) return true;
+                if (playerId < 0) return Skip("player id unknown");
 
                 // Vanilla refreshes the spawn list here; after a map change the
                 // cached array is otherwise stale.
                 GameAccess.RefreshSpawnPoints(__instance);
 
                 var points = GameAccess.SpawnPoints(__instance);
-                if (points.Count == 0) return true;
+                if (points.Count == 0) return Skip("the map reports no spawn points");
 
                 int round = GameAccess.RoundIndex();
                 var slot = SpawnAssignment.Assign(playerId, players, points.Count, round, settings.Salt.Value);
 
                 var point = points[slot.SpawnPointIndex];
-                if (point == null) return true;
+                if (point == null) return Skip($"spawn point {slot.SpawnPointIndex} is null");
 
                 var position = point.position;
                 if (SpawnAssignment.NeedsOffset(slot) && Plugin.ShouldOffsetSharedPoints)
@@ -83,8 +105,10 @@ namespace SpawnShuffle
                 var rotation = Quaternion.Euler(0f, point.eulerAngles.y, 0f);
                 GameAccess.SpawnAt(__instance, suitIndex, cigIndex, position, rotation);
 
-                Log.Info($"round {round}: player {playerId} -> point {slot.SpawnPointIndex}"
-                         + (slot.Occupants > 1 ? $" (sharing with {slot.Occupants - 1}, ring {slot.Ring})" : ""));
+                AppliedCount++;
+                LastOutcome = $"round {round}: player {playerId} -> point {slot.SpawnPointIndex}"
+                              + (slot.Occupants > 1 ? $" (sharing with {slot.Occupants - 1}, ring {slot.Ring})" : " (alone)");
+                Log.Info(LastOutcome);
 
                 return false;
             }
@@ -97,7 +121,7 @@ namespace SpawnShuffle
                     _loggedFailure = true;
                     Log.Error($"spawn assignment failed, falling back to vanilla: {e}");
                 }
-                return true;
+                return Skip($"threw: {e.GetType().Name}");
             }
         }
 
